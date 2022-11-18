@@ -3,121 +3,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import rc
+from measures import mm, mmi
 
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 rc('text', usetex=True)
-
-mm = {
-    0: 'nHost',
-    1: 'nInfect',
-    2: 'nExpectd',
-    3: 'nPatent',
-    4: 'sumLogPyrogenThres',
-    5: 'sumlogDens',
-    6: 'totalInfs',
-    7: 'nTransmit',
-    8: 'totalPatentInf',
-    9: 'contrib',
-    10: 'sumPyrogenThresh',
-    11: 'nTreatments1',
-    12: 'nTreatments2',
-    13: 'nTreatments3',
-    14: 'nUncomp',
-    15: 'nSevere',
-    16: 'nSeq',
-    17: 'nHospitalDeaths',
-    18: 'nIndDeaths',
-    19: 'nDirDeaths',
-    20: 'nEPIVaccinations',
-    21: 'allCauseIMR',
-    22: 'nMassVaccinations',
-    23: 'nHospitalRecovs',
-    24: 'nHospitalSeqs',
-    25: 'nIPTDoses',
-    26: 'annAvgK',
-    27: 'nNMFever',
-    30: 'innoculationsPerAgeGroup',
-    28: 'innoculationsPerDayOfYear',
-    29: 'kappaPerDayOfYear',
-    31: 'Vector_Nv0',
-    32: 'Vector_Nv',
-    33: 'Vector_Ov',
-    34: 'Vector_Sv',
-    35: 'InputEIR',
-    36: 'SimulatedEIR',
-    39: 'Clinical_RDTs',
-    40: 'Clinical_DrugUsage',
-    41: 'Clinical_FirstDayDeaths',
-    42: 'Clinical_HospitalFirstDayDeaths',
-    43: 'nNewInfections',
-    44: 'nMassITNs',
-    45: 'nEPI_ITNs',
-    46: 'nMassIRS',
-    47: 'nMassVA',
-    48: 'Clinical_Microscopy',
-    49: 'Clinical_DrugUsageIV',
-    50: 'nAddedToCohort',
-    51: 'nRemovedFromCohort',
-    52: 'nMDAs',
-    53: 'nNmfDeaths',
-    54: 'nAntibioticTreatments',
-    55: 'nMassScreenings',
-    56: 'nMassGVI',
-    57: 'nCtsIRS',
-    58: 'nCtsGVI',
-    59: 'nCtsMDA',
-    60: 'nCtsScreenings',
-    61: 'nSubPopRemovalTooOld',
-    62: 'nSubPopRemovalFirstEvent',
-    63: 'nPQTreatments',
-    64: 'nTreatDiagnostics',
-    65: 'nMassRecruitOnly',
-    66: 'nCtsRecruitOnly',
-    67: 'nTreatDeployments',
-    68: 'sumAge',
-    69: 'nInfectByGenotype',
-    70: 'nPatentByGenotype',
-    71: 'logDensByGenotype',
-    72: 'nHostDrugConcNonZero',
-    73: 'sumLogDrugConcNonZero',
-    74: 'expectedDirectDeaths',
-    75: 'expectedHospitalDeaths',
-    76: 'expectedIndirectDeaths',
-    77: 'expectedSequelae',
-    78: 'expectedSevere',
-    79: 'innoculationsPerVector'    
-}
-
-mmi = {v: k for k, v in mm.items()}
-
-def post_process(scenarios, age_groups):
-    data = []
-    for _, scenario in scenarios.iterrows():
-        try:
-            output = pd.read_csv(f"output/3_om_output/{scenario['count']}.txt", sep="\t", header=None)
-            output.columns = ['survey', 'ageGroup', 'measure', 'value']
-            output['eir'] = scenario['eir']
-            output['seed'] = scenario['seed']
-            output['mode'] = scenario['mode']
-            output['modelName'] = scenario['modelName']
-            data.append(output)
-        except Exception as e:
-            print(e)
-
-    df = pd.concat(data)
-    df = df.dropna()
-    df = df.reset_index(drop=True)
-    
-    # remove first survey and sum them up
-    df = df.drop(df[df.survey == 1].index)
-    df = df.groupby(['mode', 'modelName', 'eir', 'measure', 'ageGroup', 'seed'], as_index=False).value.sum()
-    
-    # adjust nHost for age_groups 0 to 1 
-    yearsAtRisk = np.array(age_groups)
-    yearsAtRisk[yearsAtRisk > 1] = 1
-    df.loc[(df.measure == mmi['nHost']), 'value'] *= yearsAtRisk[df[(df.measure == mmi['nHost'])].ageGroup-1]
-
-    return df
 
 def prevalence2to10_to_incidence(df, measures, age_groups_on_plot, age_groups, title, y_lim, filename):
     modes = df['mode'].unique()
@@ -171,7 +60,7 @@ def prevalence2to10_to_incidence(df, measures, age_groups_on_plot, age_groups, t
     fig.text(0.5, 0.02, 'PfPR_{2-10}\%', ha='center', va='center', fontsize=16)
     fig.text(0.02, 0.5, title, ha='center', va='center', rotation='vertical', fontsize=16)
     plt.tight_layout(rect=[0.025, 0.025, 0.985, 0.985])
-    fig.savefig(f'output/5_om_figures/{filename}.pdf')
+    fig.savefig(filename)
 
 def age_incidence(df, mode, measures, title, prev_categories, y_lim, age_groups, filename):
     modelNames = df['modelName'].unique()
@@ -237,7 +126,7 @@ def age_incidence(df, mode, measures, title, prev_categories, y_lim, age_groups,
         fig.text(0.02, 0.5, title, ha='center', va='center', rotation='vertical', fontsize=16)
         fig.text(0.5, 0.02, 'age', ha='center', va='center', fontsize=16)
         plt.tight_layout(rect=[0.025, 0.025, 0.975, 0.985])
-        fig.savefig(f'output/5_om_figures/{filename}.pdf')
+        fig.savefig(filename)
 
 def eir_to_prevalence2to10(df, mode, age_groups, filename):
     modelNames = df['modelName'].unique()
@@ -274,4 +163,4 @@ def eir_to_prevalence2to10(df, mode, age_groups, filename):
     ax.set_xlabel('simulated annual EIR')
     ax.set_ylabel('PfPR_{2-10}\%')
     plt.tight_layout()
-    fig.savefig(f'output/5_om_figures/{filename}.pdf')
+    fig.savefig(filename)
