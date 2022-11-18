@@ -236,7 +236,7 @@
                 <group lowerbound="20.0" value="1.0"/>
             </availabilityToMosquitoes>
         </human>
-        		<parameters interval="5" iseed="@SEED@" latentp="3">
+        		<parameters interval="5" iseed="@seed@" latentp="3">
 			<parameter include="0" name="'-ln(1-Sinf)'" number="1" value="0.050736"/>
 			<parameter include="0" name="Estar" number="2" value="0.03247"/>
 			<parameter include="0" name="Simm" number="3" value="0.138161050830301"/>

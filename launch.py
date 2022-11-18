@@ -7,7 +7,8 @@ import plot
 from measures import mm, mmi
 
 sciCORE = False
-run_scenarios = False
+do_run = True
+do_plot =  True
 
 # Base model parameters and default xml with no intervention
 templateFiles = ["R0000GA.xml"]
@@ -20,7 +21,7 @@ omversion = 44
 age_groups = [0.5,1,2,5,10,15,20,100] # must reflect the xml monitoring section
 pop_size = 2000
 burn_in_years = 30
-access = 0.44 # 5-day probability
+access = 0.15 # 5-day probability
 start_year = 2000
 end_year = 2020
 outdoor_biting = 0.2
@@ -92,8 +93,8 @@ def run_scenarios(scenarios):
     shutil.copy(ompath+'/densities.csv', "output/")
     shutil.copy(ompath+f'/scenario_{omversion}.xsd', f'output/scenario_{omversion}.xsd')
     
-    if sciCORE: run_scicore()
-    else: run_local()
+    if sciCORE: run_scicore(scenarios)
+    else: run_local(scenarios)
 
 # return a list of scenarios
 def create_scenarios():
@@ -116,7 +117,7 @@ def create_scenarios():
         for eir in eirs:
             for seed in range(0,seeds):
                 for mode in modes:
-                    scenario = xml.replace('@SEED@', str(seed))
+                    scenario = xml.replace('@seed@', str(seed))
                     scenario = scenario.replace('@eir@', str(eir))
 
                     if mode == "seasonal": seasonality = season_month
@@ -161,7 +162,7 @@ def post_process(scenarios, age_groups):
 
     return df
 
-if run_scenarios:
+if do_run:
     shutil.rmtree("output", ignore_errors = True)
     os.makedirs(os.path.relpath(f'output/{xml_folder}'), exist_ok=True)
     os.makedirs(os.path.relpath(f'output/{om_output_folder}'), exist_ok=True)
@@ -178,27 +179,28 @@ if run_scenarios:
     scenarios = pd.DataFrame(scenarios)
     scenarios.to_csv("scenarios.csv", index=False)
 
-print(f'Loading and post processing... ', flush=True)
-scenarios = pd.read_csv("scenarios.csv")
-df = post_process(scenarios, age_groups)
-print('Done.')
+if do_plot:
+    print(f'Loading and post processing... ', flush=True)
+    scenarios = pd.read_csv("scenarios.csv")
+    df = post_process(scenarios, age_groups)
+    print('Done.')
 
-print(f'Plotting... ', flush=True)
+    print(f'Plotting... ', flush=True)
 
-age_groups_on_plot = [[0,5],[5,10],[10,15],[15,20]]
-plot.prevalence2to10_to_incidence(df, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'output/{figures_folder}/prevalence_to_incidence.pdf')
-plot.prevalence2to10_to_incidence(df, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'output/{figures_folder}/prevalence_to_severe.pdf')
-plot.prevalence2to10_to_incidence(df, ['expectedDirectDeaths', 'expectedIndirectDeaths'], age_groups_on_plot, age_groups, 'Mortality (events per person per year)', [0, 0.03], f'output/{figures_folder}/prevalence_to_death.pdf')
+    age_groups_on_plot = [[0,5],[5,10],[10,15],[15,20]]
+    plot.prevalence2to10_to_incidence(df, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'output/{figures_folder}/prevalence_to_incidence.pdf')
+    plot.prevalence2to10_to_incidence(df, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'output/{figures_folder}/prevalence_to_severe.pdf')
+    plot.prevalence2to10_to_incidence(df, ['expectedDirectDeaths', 'expectedIndirectDeaths'], age_groups_on_plot, age_groups, 'Mortality (events per person per year)', [0, 0.03], f'output/{figures_folder}/prevalence_to_death.pdf')
 
-prev_categories = [[0.5,5],[6,14],[22,38],[43,57]]
-for mode in df['mode'].unique():
-    plot.age_incidence(df, mode, ['nUncomp'], 'Clinical incidence (events per person per year)', prev_categories, [0, 5.9], age_groups, f'output/{figures_folder}/age_incidence_{mode}.pdf')
-    plot.age_incidence(df, mode, ['expectedSevere'], 'Severe cases (events per person per year)', prev_categories, [0, 0.25], age_groups, f'output/{figures_folder}/age_severe_{mode}.pdf')
-    plot.age_incidence(df, mode, ['expectedDirectDeaths', 'expectedIndirectDeaths'], 'Mortality (events per person per year)', prev_categories, [0, 0.06], age_groups, f'output/{figures_folder}/age_death_{mode}.pdf')
-    
-for mode in df['mode'].unique():
-    plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
-    plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
-    plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
+    prev_categories = [[0.5,5],[6,14],[22,38],[43,57]]
+    for mode in df['mode'].unique():
+        plot.age_incidence(df, mode, ['nUncomp'], 'Clinical incidence (events per person per year)', prev_categories, [0, 5.9], age_groups, f'output/{figures_folder}/age_incidence_{mode}.pdf')
+        plot.age_incidence(df, mode, ['expectedSevere'], 'Severe cases (events per person per year)', prev_categories, [0, 0.25], age_groups, f'output/{figures_folder}/age_severe_{mode}.pdf')
+        plot.age_incidence(df, mode, ['expectedDirectDeaths', 'expectedIndirectDeaths'], 'Mortality (events per person per year)', prev_categories, [0, 0.06], age_groups, f'output/{figures_folder}/age_death_{mode}.pdf')
+        
+    for mode in df['mode'].unique():
+        plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
+        plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
+        plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
 
-print(f'Done.', flush=True)
+    print(f'Done.', flush=True)
