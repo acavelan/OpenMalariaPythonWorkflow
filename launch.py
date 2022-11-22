@@ -32,9 +32,9 @@ modes = ["perennial", "seasonal"]
 eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 65, 70, 80, 90, 100, 120, 150, 200, 250, 500, 1000]
 
 # Test (12 scenarios with 2000 popsize); uncomment to overwrite other settings and do a quick test
-# pop_size = 2000
+# pop_size = 1000
 # modes = ["perennial", "seasonal"]
-# eirs = [10, 20, 50]
+# eirs = [10, 20]
 # seeds = 2
 
 # Computed
@@ -133,21 +133,42 @@ def create_scenarios():
                         count += 1
     return scenarios
 
-def post_process(scenarios, age_groups):
+def om_output_to_df(scenarios):
     data = []
-    for _, scenario in scenarios.iterrows():
+    for scenario in scenarios:
         try:
             output = pd.read_csv(f"output/{om_output_folder}/{scenario['count']}.txt", sep="\t", header=None)
             output.columns = ['survey', 'ageGroup', 'measure', 'value']
-            output['eir'] = scenario['eir']
-            output['seed'] = scenario['seed']
-            output['mode'] = scenario['mode']
-            output['modelName'] = scenario['modelName']
+            for key in scenario.keys():
+                output[key] = scenario[key]
             data.append(output)
         except Exception as e:
             print(e)
 
-    df = pd.concat(data)
+    return pd.concat(data)
+
+if do_run:
+    shutil.rmtree("output", ignore_errors = True)
+    os.makedirs(os.path.relpath(f'output/{xml_folder}'), exist_ok=True)
+    os.makedirs(os.path.relpath(f'output/{om_output_folder}'), exist_ok=True)
+    os.makedirs(os.path.relpath(f'output/{figures_folder}'), exist_ok=True)
+
+    print(f'Creating scenarios', flush=True)
+    scenarios = create_scenarios()
+
+    print(f'Running {len(scenarios)} scenarios', flush=True)
+    run_scenarios(scenarios)
+
+    print(f'Saving output to output.csv', flush=True)
+    df = om_output_to_df(scenarios)
+    df.to_csv('output.csv', index=False)
+
+if do_plot:
+    print(f'Loading...', flush=True)
+    df = pd.read_csv('output.csv')
+
+    # User part below
+    print(f'Post processing... ', flush=True)
     df = df.dropna() # drop rows with NaN
     df = df.reset_index(drop=True)
     
@@ -160,33 +181,7 @@ def post_process(scenarios, age_groups):
     yearsAtRisk[yearsAtRisk > 1] = 1
     df.loc[(df.measure == mmi['nHost']), 'value'] *= yearsAtRisk[df[(df.measure == mmi['nHost'])].ageGroup-1]
 
-    return df
-
-if do_run:
-    shutil.rmtree("output", ignore_errors = True)
-    os.makedirs(os.path.relpath(f'output/{xml_folder}'), exist_ok=True)
-    os.makedirs(os.path.relpath(f'output/{om_output_folder}'), exist_ok=True)
-    os.makedirs(os.path.relpath(f'output/{figures_folder}'), exist_ok=True)
-
-    scenarios = create_scenarios()
-
-    print(f'{len(scenarios)} scenarios created. Running... ', flush=True)
-    
-    run_scenarios(scenarios)
-
-    print(f'Done.', flush=True)
-
-    scenarios = pd.DataFrame(scenarios)
-    scenarios.to_csv("scenarios.csv", index=False)
-
-if do_plot:
-    print(f'Loading and post processing... ', flush=True)
-    scenarios = pd.read_csv("scenarios.csv")
-    df = post_process(scenarios, age_groups)
-    print('Done.')
-
     print(f'Plotting... ', flush=True)
-
     age_groups_on_plot = [[0,5],[5,10],[10,15],[15,20]]
     plot.prevalence2to10_to_incidence(df, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'output/{figures_folder}/prevalence_to_incidence.pdf')
     plot.prevalence2to10_to_incidence(df, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'output/{figures_folder}/prevalence_to_severe.pdf')
@@ -202,5 +197,5 @@ if do_plot:
         plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
         plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
         plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/{figures_folder}/eir_to_prevalence_{mode}.pdf')
-
+    
     print(f'Done.', flush=True)
