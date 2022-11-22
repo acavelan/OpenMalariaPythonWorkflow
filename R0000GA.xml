@@ -45,19 +45,19 @@
             <option name="expectedSevere"/>   <!-- id 77 -->
         </SurveyOptions>
         <surveys detectionLimit="40">
-      <surveyTime>@start_year@-01-01</surveyTime>
-      <surveyTime>@start_year@-01-31</surveyTime>
-      <surveyTime>@start_year@-02-28</surveyTime>
-      <surveyTime>@start_year@-03-31</surveyTime>
-      <surveyTime>@start_year@-04-30</surveyTime>
-      <surveyTime>@start_year@-05-31</surveyTime>
-      <surveyTime>@start_year@-06-30</surveyTime>
-      <surveyTime>@start_year@-07-31</surveyTime>
-      <surveyTime>@start_year@-08-31</surveyTime>
-      <surveyTime>@start_year@-09-30</surveyTime>
-      <surveyTime>@start_year@-10-31</surveyTime>
-      <surveyTime>@start_year@-11-30</surveyTime>
-      <surveyTime>@start_year@-12-31</surveyTime>    
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-01-01">@start_year@-01-01</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-01-31">@start_year@-01-31</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-02-28">@start_year@-02-28</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-03-31">@start_year@-03-31</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-04-30">@start_year@-04-30</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-05-31">@start_year@-05-31</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-06-30">@start_year@-06-30</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-07-31">@start_year@-07-31</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-08-31">@start_year@-08-31</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-09-30">@start_year@-09-30</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-10-31">@start_year@-10-31</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-11-30">@start_year@-11-30</surveyTime>
+      <surveyTime repeatStep="1y" repeatEnd="@end_year@-12-31">@start_year@-12-31</surveyTime>    
         </surveys>
         <ageGroup lowerbound="0">
         <group upperbound="0.5"/>

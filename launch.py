@@ -33,7 +33,6 @@ eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12
 
 # Test (12 scenarios with 2000 popsize); uncomment to overwrite other settings and do a quick test
 # pop_size = 1000
-# modes = ["perennial", "seasonal"]
 # eirs = [10, 20]
 # seeds = 2
 
