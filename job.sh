@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=OM_benchmark
+#SBATCH --job-name=@jobname@
 #SBATCH --time=00:30:00
-#SBATCH --account=penny
+#SBATCH --account=@account@
 #SBATCH --qos=30min
 #SBATCH --output=%a.err #%A_%a.err
 #SBATCH --error=%a.err #%A_%a.out

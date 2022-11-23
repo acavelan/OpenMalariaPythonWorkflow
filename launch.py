@@ -7,6 +7,9 @@ import plot
 from measures import mm, mmi
 
 sciCORE = False
+sciCORE_account = "penny"
+sciCORE_jobName = "OM"
+
 do_run = True
 do_plot =  True
 
@@ -67,6 +70,8 @@ def run_scicore(scenarios):
         with open(f"job.sh", "r") as batchFile:
             script = batchFile.read()
             script = script.replace('@N@', str(n))
+            script = script.replace('@account@', sciCORE_account)
+            script = script.replace('@jobname@', sciCORE_jobName)
 
             with open(f'output/start_array_job.sh', 'w') as batch:
                 batch.write(script)
