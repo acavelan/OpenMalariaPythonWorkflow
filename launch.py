@@ -7,7 +7,7 @@ import plot
 from measures import mm, mmi
 
 # if using the sciCORE cluster:
-sciCORE = False
+sciCORE = True
 sciCORE_account = "penny"
 sciCORE_jobName = "OM"
 
@@ -20,14 +20,15 @@ scaffoldXmls = ["R0000GA.xml"]
 modelNames = ["R0000GA"]
 
 # OpenMalaria
-ompath = "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
 omversion = 44
+ompath = "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
+if sciCORE: ompath = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
 
 # Fixed
 age_groups = [0.5,1,2,5,10,15,20,100] # must reflect the xml monitoring section
-pop_size = 2000
+pop_size = 10000
 burn_in_years = 30
-access = 0.15 # 5-day probability
+access = 0.2029544 # 5-day probability
 start_year = 2000
 end_year = 2020
 outdoor_biting = 0.2
@@ -35,7 +36,7 @@ outdoor_biting = 0.2
 # Variable
 seeds = 10
 modes = ["perennial", "seasonal"]
-eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 65, 70, 80, 90, 100, 120, 150, 200, 250, 500, 1000]
+eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 65, 70, 80, 90, 100, 120, 150, 200, 250, 500, 750, 1000]
 
 # Test (12 scenarios with 2000 popsize); uncomment to overwrite other settings and do a quick test
 # pop_size = 1000
