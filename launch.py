@@ -9,11 +9,11 @@ from measures import mm, mmi
 # if using the sciCORE cluster:
 sciCORE = True
 sciCORE_account = "penny"
-sciCORE_jobName = "OM"
+sciCORE_jobName = "OpenMalaria"
 
 # switch to only run, plot or both
 do_run = True
-do_plot =  True
+do_plot = True
 
 # Scaffold xml to use and a name
 scaffoldXmls = ["R0000GA.xml"]
