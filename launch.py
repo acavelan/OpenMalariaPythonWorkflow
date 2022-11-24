@@ -19,6 +19,7 @@ do_plot =  True
 scaffoldXmls = ["R0000GA.xml"]
 modelNames = ["R0000GA"]
 
+# OpenMalaria
 ompath = "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
 omversion = 44
 
@@ -102,6 +103,20 @@ def run_scenarios(scenarios):
     if sciCORE: run_scicore(scenarios)
     else: run_local(scenarios)
 
+def om_output_to_df(scenarios):
+    data = []
+    for scenario in scenarios:
+        try:
+            output = pd.read_csv(f"output/{om_output_folder}/{scenario['count']}.txt", sep="\t", header=None)
+            output.columns = ['survey', 'ageGroup', 'measure', 'value']
+            for key in scenario.keys():
+                output[key] = scenario[key]
+            data.append(output)
+        except Exception as e:
+            print(e)
+
+    return pd.concat(data)
+    
 # return a list of scenarios
 def create_scenarios():
     count = 0
@@ -138,20 +153,6 @@ def create_scenarios():
                         scenarios.append({"modelName": modelName, "eir": eir, "seed": seed, "mode": mode, "count": count})
                         count += 1
     return scenarios
-
-def om_output_to_df(scenarios):
-    data = []
-    for scenario in scenarios:
-        try:
-            output = pd.read_csv(f"output/{om_output_folder}/{scenario['count']}.txt", sep="\t", header=None)
-            output.columns = ['survey', 'ageGroup', 'measure', 'value']
-            for key in scenario.keys():
-                output[key] = scenario[key]
-            data.append(output)
-        except Exception as e:
-            print(e)
-
-    return pd.concat(data)
 
 if do_run:
     shutil.rmtree("output", ignore_errors = True)
