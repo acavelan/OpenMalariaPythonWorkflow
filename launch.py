@@ -6,15 +6,17 @@ import plot
 # dictionary of OpenMalaria measure name <-> output number
 from measures import mm, mmi
 
+# if using the sciCORE cluster:
 sciCORE = False
 sciCORE_account = "penny"
 sciCORE_jobName = "OM"
 
+# switch to only run, plot or both
 do_run = True
 do_plot =  True
 
-# Base model parameters and default xml with no intervention
-templateFiles = ["R0000GA.xml"]
+# Scaffold xml to use and a name
+scaffoldXmls = ["R0000GA.xml"]
 modelNames = ["R0000GA"]
 
 ompath = "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
@@ -104,7 +106,7 @@ def run_scenarios(scenarios):
 def create_scenarios():
     count = 0
     scenarios = []
-    for templateFile, modelName in zip(templateFiles, modelNames):
+    for templateFile, modelName in zip(scaffoldXmls, modelNames):
         xml = None
         with open(templateFile, "r") as fp:
             xml = fp.read()
