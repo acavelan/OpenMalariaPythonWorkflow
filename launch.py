@@ -156,18 +156,19 @@ def create_scenarios():
     return scenarios
 
 if do_run:
+    print(f'Cleaning Tree...', flush=True)
     shutil.rmtree("output", ignore_errors = True)
     os.makedirs(os.path.relpath(f'output/{xml_folder}'), exist_ok=True)
     os.makedirs(os.path.relpath(f'output/{om_output_folder}'), exist_ok=True)
     os.makedirs(os.path.relpath(f'output/{figures_folder}'), exist_ok=True)
 
-    print(f'Creating scenarios', flush=True)
+    print(f'Creating scenarios...', flush=True)
     scenarios = create_scenarios()
 
-    print(f'Running {len(scenarios)} scenarios', flush=True)
+    print(f'Running {len(scenarios)} scenarios...', flush=True)
     run_scenarios(scenarios)
 
-    print(f'Saving output to output.csv', flush=True)
+    print(f'Saving output to output.csv...', flush=True)
     df = om_output_to_df(scenarios)
     df.to_csv('output.csv', index=False)
 
