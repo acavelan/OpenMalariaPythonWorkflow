@@ -10,4 +10,4 @@ plot.py: contains code for plotting.
 
 measures.py: contains a dictionary of measure names <-> output number 
 
-R0000GA.xml: configurable template scenario with base model parameters
+scaffolds: contains scaffold scenarios, see scaffolds/README.md

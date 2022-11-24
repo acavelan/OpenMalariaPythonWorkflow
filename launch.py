@@ -16,8 +16,8 @@ do_run = True
 do_plot = True
 
 # Scaffold xml to use and a name
-scaffoldXmls = ["R0000GA.xml"]
-modelNames = ["R0000GA"]
+scaffoldXmls = ["R0000GA.xml", "2022.11.01.xml"]
+modelNames = ["R0000GA", "2022.11.01"]
 
 # OpenMalaria
 omversion = 44
@@ -122,9 +122,9 @@ def om_output_to_df(scenarios):
 def create_scenarios():
     count = 0
     scenarios = []
-    for templateFile, modelName in zip(scaffoldXmls, modelNames):
+    for scaffoldXml, modelName in zip(scaffoldXmls, modelNames):
         xml = None
-        with open(templateFile, "r") as fp:
+        with open(f'scaffolds/{scaffoldXml}', "r") as fp:
             xml = fp.read()
 
         xml = xml.replace(f'@version@', f'{omversion}')
