@@ -110,7 +110,7 @@ if do_run:
     scenarios = create_scenarios()
 
     print(f'Running {len(scenarios)} scenarios...', flush=True)
-    utils.run_scenarios(scenarios, om_path, om_version, sciCORE)
+    utils.run_scenarios(scenarios, om_path, om_version, sciCORE, sciCORE_account, sciCORE_jobName)
 
     print(f'Saving output to output.csv...', flush=True)
     df = utils.om_output_to_df(scenarios)

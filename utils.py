@@ -5,7 +5,7 @@ import numpy as np
 def exec(command):
     return subprocess.Popen(command, shell = True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True, text=True)
 
-def run_scicore(scenarios, om_path):
+def run_scicore(scenarios, om_path, sciCORE_account, sciCORE_jobName):
     with open(f"output/commands.txt", "w") as batch_file:
         for scenario in scenarios:
             command = f'openMalaria -s xml/{scenario["count"]}.xml --output txt/{scenario["count"]}.txt'
@@ -39,11 +39,11 @@ def run_local(scenarios, om_path):
         except subprocess.TimeoutExpired:
             p.kill()
             
-def run_scenarios(scenarios, om_path, om_version, sciCORE=False):
+def run_scenarios(scenarios, om_path, om_version, sciCORE=False, sciCORE_account="penny", sciCORE_jobName="OpenMalaria"):
     shutil.copy(om_path+'/densities.csv', "output/")
     shutil.copy(om_path+f'/scenario_{om_version}.xsd', f'output/scenario_{om_version}.xsd')
     
-    if sciCORE: run_scicore(scenarios, om_path)
+    if sciCORE: run_scicore(scenarios, om_path, sciCORE_account, sciCORE_jobName)
     else: run_local(scenarios, om_path)
 
 def om_output_to_df(scenarios):
