@@ -10,13 +10,13 @@ rc('text', usetex=True)
 
 def prevalence2to10_to_incidence(df, measures, age_groups_on_plot, age_groups, title, y_lim, filename):
     modes = df['mode'].unique()
-    modelNames = df['modelName'].unique()
+    scaffoldNames = df['scaffoldName'].unique()
 
-    nx = len(modelNames); ny = len(modes); f = 1; firstPlot = True
+    nx = len(scaffoldNames); ny = len(modes); f = 1; firstPlot = True
     fig = plt.figure(figsize=(12,8))
     for mode in modes:
-        for modelName in modelNames:
-            g = df[(df["modelName"] == modelName) & (df["mode"] == mode)]
+        for scaffoldName in scaffoldNames:
+            g = df[(df["scaffoldName"] == scaffoldName) & (df["mode"] == mode)]
 
             # compute prevalence 2 to 10
             age2to10 = (age_groups[g.ageGroup-1] >= 2) & (age_groups[g.ageGroup-1] <= 10)
@@ -51,9 +51,9 @@ def prevalence2to10_to_incidence(df, measures, age_groups_on_plot, age_groups, t
             firstPlot = False
 
     # Decorations
-    for i in range(0, len(modelNames)):
-        coord = (i+1)/len(modelNames)-1.0/len(modelNames)/2
-        fig.text(coord, 0.98, modelNames[i], ha='center', va='center', fontsize=16)
+    for i in range(0, len(scaffoldNames)):
+        coord = (i+1)/len(scaffoldNames)-1.0/len(scaffoldNames)/2
+        fig.text(coord, 0.98, scaffoldNames[i], ha='center', va='center', fontsize=16)
         
     fig.text(0.98, 0.75, 'Perennial', ha='center', va='center', rotation=-90, fontsize=16)
     fig.text(0.98, 0.25, 'Seasonal', ha='center', va='center', rotation=-90, fontsize=16)
@@ -63,19 +63,19 @@ def prevalence2to10_to_incidence(df, measures, age_groups_on_plot, age_groups, t
     fig.savefig(filename)
 
 def age_incidence(df, mode, measures, title, prev_categories, y_lim, age_groups, filename):
-    modelNames = df['modelName'].unique()
+    scaffoldNames = df['scaffoldName'].unique()
 
-    nx = len(modelNames); ny = 4; f = 0; firstPlot = True
+    nx = len(scaffoldNames); ny = 4; f = 0; firstPlot = True
     fig = plt.figure(figsize=(8,8))
 
     gs = fig.add_gridspec(ny, nx, hspace=0, wspace=0)
     axes = gs.subplots(sharex='col', sharey='row').flatten()
 
     for i in range(len(prev_categories)):
-        for modelName in modelNames:
+        for scaffoldName in scaffoldNames:
             ax = axes[f]; f += 1
                     
-            g = df[(df["modelName"] == modelName) & (df["mode"] == mode)]
+            g = df[(df["scaffoldName"] == scaffoldName) & (df["mode"] == mode)]
 
             # compute prevalence 2 to 10
             age2to10 = (age_groups[g.ageGroup-1] >= 2) & (age_groups[g.ageGroup-1] <= 10)
@@ -107,16 +107,16 @@ def age_incidence(df, mode, measures, title, prev_categories, y_lim, age_groups,
             ages = age_groups[incidence.mean().index - 1]
 
             # plot mean, min and max of seeds and EIR
-            ax.plot(ages, incidence.mean(), marker='o', label=f"{modelName}")
+            ax.plot(ages, incidence.mean(), marker='o', label=f"{scaffoldName}")
             ax.fill_between(ages, incidence.min(), incidence.max(), alpha=0.3)
 
             ax.set_ylim(y_lim)
             ax.set_xticks([0.0, 5.0, 10.0, 15,0, 20.0])
             ax.set_xticklabels([0.0, 5.0, 10.0, 15,0, 20.0])
     
-        for i in range(0, len(modelNames)):
-            coord = (i+1)/len(modelNames)-1.0/len(modelNames)/2
-            fig.text(coord, 0.98, modelNames[i], ha='center', va='center', fontsize=16)
+        for i in range(0, len(scaffoldNames)):
+            coord = (i+1)/len(scaffoldNames)-1.0/len(scaffoldNames)/2
+            fig.text(coord, 0.98, scaffoldNames[i], ha='center', va='center', fontsize=16)
         
         for i in range(0, len(prev_categories)):
             prev_cat = prev_categories[i]
@@ -129,14 +129,14 @@ def age_incidence(df, mode, measures, title, prev_categories, y_lim, age_groups,
         fig.savefig(filename)
 
 def eir_to_prevalence2to10(df, mode, age_groups, filename):
-    modelNames = df['modelName'].unique()
+    scaffoldNames = df['scaffoldName'].unique()
 
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(1,1,1)
 
-    for modelName in modelNames:
+    for scaffoldName in scaffoldNames:
                 
-        g = df[(df["modelName"] == modelName) & (df["mode"] == mode)]
+        g = df[(df["scaffoldName"] == scaffoldName) & (df["mode"] == mode)]
 
         # compute prevalence 2 to 10
         age2to10 = (age_groups[g.ageGroup-1] >= 2) & (age_groups[g.ageGroup-1] <= 10)
@@ -150,7 +150,7 @@ def eir_to_prevalence2to10(df, mode, age_groups, filename):
             continue
 
         # plot mean, min and max of seeds
-        ax.plot(simulatedEIR, prevalence2to10.mean() * 100, marker='o', label=f"{modelName} - {mode}")
+        ax.plot(simulatedEIR, prevalence2to10.mean() * 100, marker='o', label=f"{scaffoldName} - {mode}")
         ax.fill_between(simulatedEIR, prevalence2to10.min() * 100, prevalence2to10.max() * 100, alpha=0.3)
 
     ax.set_xscale('symlog')

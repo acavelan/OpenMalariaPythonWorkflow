@@ -8,7 +8,7 @@ import plot
 from measures import mm, mmi
 
 # if using the sciCORE cluster:
-sciCORE = True
+sciCORE = False
 sciCORE_account = "penny"
 sciCORE_jobName = "OpenMalaria"
 
@@ -18,16 +18,17 @@ om_path = "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
 if sciCORE: om_path = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
 
 # switch to only run, plot or both
-do_run = True
+do_run = False
+do_extract = True
 do_plot = True
 
 # Scaffold xml to use and a name
 scaffolds = {
     "R0000GA.xml" : "R0000GA",
-    "desc_true.xml" : "desc_true",
-    "desc_true_vec.xml" : "desc_true_vec",
-    "desc_false_vec.xml" : "desc_false_vec",
-    "desc_false_vec_het_CV5.xml" : "desc_false_vec_het_CV5",
+    # "desc_true.xml" : "desc_true",
+    # "desc_true_vec.xml" : "desc_true_vec",
+    # "desc_false_vec.xml" : "desc_false_vec",
+    # "desc_false_vec_het_CV5.xml" : "desc_false_vec_het_CV5",
 }
 
 # Fixed
@@ -45,9 +46,10 @@ modes = ["perennial", "seasonal"]
 eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 65, 70, 80, 90, 100, 120, 150, 200, 250, 500, 750, 1000]
 
 # Test (12 scenarios with 2000 popsize); uncomment to overwrite other settings and do a quick test
-# pop_size = 300
-# eirs = [10, 20]
-# seeds = 2
+pop_size = 300
+eirs = [2, 10, 20, 40, 60, 80, 100, 200]
+modes = ["perennial", "seasonal"]
+seeds = 3
 
 # Computed
 burn_in = start_year - burn_in_years
@@ -111,14 +113,20 @@ if do_run:
 
     print(f'Running {len(scenarios)} scenarios...', flush=True)
     utils.run_scenarios(scenarios, om_path, om_version, sciCORE, sciCORE_account, sciCORE_jobName)
+    pd.DataFrame(scenarios).to_csv('scenarios.csv', index=False)
 
-    print(f'Saving output to output.csv...', flush=True)
+if do_extract:
+    scenarios = pd.read_csv('scenarios.csv')
+    print(f'Loading all results...', flush=True)
     df = utils.om_output_to_df(scenarios)
-    df.to_csv('output.csv', index=False)
+    print(f'Saving output...', flush=True)
+    # df.to_csv('output.csv', index=False, compression='gzip')
+    df.to_hdf('output.h5', key='df', mode='w', format='table', index=False, complib='blosc:blosclz', complevel=9)
 
 if do_plot:
     print(f'Loading...', flush=True)
-    df = pd.read_csv('output.csv')
+    # df = pd.read_csv('output.csv', compression='gzip')
+    df = pd.read_hdf('output.h5', key='df')
 
     # User part below
     print(f'Post processing... ', flush=True)

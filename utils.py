@@ -33,8 +33,8 @@ def run_local(scenarios, om_path):
     for p in processes:
         try:
             outs, errs = p.communicate(timeout=300)
-            print(outs)
-            print(errs)
+            # print(outs)
+            # print(errs)
             p.wait()
         except subprocess.TimeoutExpired:
             p.kill()
@@ -48,7 +48,7 @@ def run_scenarios(scenarios, om_path, om_version, sciCORE=False, sciCORE_account
 
 def om_output_to_df(scenarios):
     data = []
-    for scenario in scenarios:
+    for _, scenario in scenarios.iterrows():
         try:
             output = pd.read_csv(f"output/txt/{scenario['count']}.txt", sep="\t", header=None)
             output.columns = ['survey', 'ageGroup', 'measure', 'value']
