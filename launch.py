@@ -1,7 +1,7 @@
 import math, os, sys, subprocess, torch, shutil
 import pandas as pd
 import numpy as np
-import utils
+import run, extract
 import plot
 
 # dictionary of OpenMalaria measure name <-> output number
@@ -16,6 +16,8 @@ sciCORE_jobName = "OpenMalaria"
 om_version = 44
 om_path = "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
 if sciCORE: om_path = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
+
+hdf5file = 'output.h5'
 
 # switch to only run, plot or both
 do_run = False
@@ -112,21 +114,18 @@ if do_run:
     scenarios = create_scenarios()
 
     print(f'Running {len(scenarios)} scenarios...', flush=True)
-    utils.run_scenarios(scenarios, om_path, om_version, sciCORE, sciCORE_account, sciCORE_jobName)
+    run.run_scenarios(scenarios, hdf5file, om_path, om_version, sciCORE, sciCORE_account, sciCORE_jobName)
     pd.DataFrame(scenarios).to_csv('scenarios.csv', index=False)
 
 if do_extract:
+    print(f'Extracting results to hdf5 file...', flush=True)
     scenarios = pd.read_csv('scenarios.csv')
-    print(f'Loading all results...', flush=True)
-    df = utils.om_output_to_df(scenarios)
-    print(f'Saving output...', flush=True)
-    # df.to_csv('output.csv', index=False, compression='gzip')
-    df.to_hdf('output.h5', key='df', mode='w', format='table', index=False, complib='blosc:blosclz', complevel=9)
+    extract.to_hdf5(scenarios, hdf5file)
 
 if do_plot:
     print(f'Loading...', flush=True)
-    # df = pd.read_csv('output.csv', compression='gzip')
-    df = pd.read_hdf('output.h5', key='df')
+    scenarios = pd.read_csv('scenarios.csv')
+    df = pd.read_hdf('output.h5', key='data')
 
     # User part below
     print(f'Post processing... ', flush=True)
@@ -135,8 +134,11 @@ if do_plot:
     
     # remove first survey and sum them up
     df = df.drop(df[df.survey == 1].index)
-    df = df.groupby(['mode', 'scaffoldName', 'eir', 'measure', 'ageGroup', 'seed'], as_index=False).value.sum()
-    
+    df = df.groupby(['count', 'measure', 'ageGroup'], as_index=False).value.sum()
+
+    # merge with scenarios
+    df = df.merge(scenarios, how='outer')
+
     # adjust nHost for age_groups 0 to 1 
     yearsAtRisk = np.array(age_groups)
     yearsAtRisk[yearsAtRisk > 1] = 1

@@ -8,7 +8,10 @@ def exec(command):
 def run_scicore(scenarios, om_path, sciCORE_account, sciCORE_jobName):
     with open(f"output/commands.txt", "w") as batch_file:
         for scenario in scenarios:
-            command = f'openMalaria -s xml/{scenario["count"]}.xml --output txt/{scenario["count"]}.txt'
+            count = scenario["count"]
+            outputfile = f'txt/{scenario["count"]}.txt'
+            toHDF5 = os.path.dirname(os.path.realpath(__file__)) + '/toHDF5.py'
+            command = f'openMalaria -s xml/{count}.xml --output {outputfile}'
             batch_file.write(f'export PATH=$PATH:{om_path} && {command}\n')
 
         n = len(scenarios)
@@ -27,7 +30,10 @@ def run_scicore(scenarios, om_path, sciCORE_account, sciCORE_jobName):
 def run_local(scenarios, om_path):
     processes = []
     for scenario in scenarios:
-        command = f'openMalaria -s xml/{scenario["count"]}.xml --output txt/{scenario["count"]}.txt'
+        count = scenario["count"]
+        outputfile = f'txt/{scenario["count"]}.txt'
+        toHDF5 = os.path.dirname(os.path.realpath(__file__)) + '/toHDF5.py'
+        command = f'openMalaria -s xml/{count}.xml --output {outputfile}'
         processes.append(exec(f'export PATH=$PATH:{om_path} && cd output && {command}'))
 
     for p in processes:
@@ -38,24 +44,10 @@ def run_local(scenarios, om_path):
             p.wait()
         except subprocess.TimeoutExpired:
             p.kill()
-            
-def run_scenarios(scenarios, om_path, om_version, sciCORE=False, sciCORE_account="penny", sciCORE_jobName="OpenMalaria"):
+
+def run_scenarios(scenarios, hdf5file, om_path, om_version, sciCORE=False, sciCORE_account="penny", sciCORE_jobName="OpenMalaria"):
     shutil.copy(om_path+'/densities.csv', "output/")
     shutil.copy(om_path+f'/scenario_{om_version}.xsd', f'output/scenario_{om_version}.xsd')
     
     if sciCORE: run_scicore(scenarios, om_path, sciCORE_account, sciCORE_jobName)
     else: run_local(scenarios, om_path)
-
-def om_output_to_df(scenarios):
-    data = []
-    for _, scenario in scenarios.iterrows():
-        try:
-            output = pd.read_csv(f"output/txt/{scenario['count']}.txt", sep="\t", header=None)
-            output.columns = ['survey', 'ageGroup', 'measure', 'value']
-            for key in scenario.keys():
-                output[key] = scenario[key]
-            data.append(output)
-        except Exception as e:
-            print(e)
-
-    return pd.concat(data)
