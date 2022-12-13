@@ -1,10 +1,7 @@
 import pandas as pd
 import shutil
 
-def to_hdf5(scenarios, hdf5file, append=False):
-    if append == False:
-        shutil.rmtree(hdf5file, ignore_errors = True)
-
+def to_hdf5(scenarios, hdf5file):
     data = []
     for _, scenario in scenarios.iterrows():
         try:
@@ -16,6 +13,6 @@ def to_hdf5(scenarios, hdf5file, append=False):
             # output.to_hdf(hdf5file, key='data', mode='a', append=True, data_columns=True, format='table', index=False, complib='blosc:blosclz', complevel=9)
         except Exception as e:
             print(e)
-            
+
     data = pd.concat(data)
     data.to_hdf(hdf5file, key='data', mode='w', data_columns=True, format='table', index=False, complib='blosc:blosclz', complevel=9)

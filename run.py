@@ -49,5 +49,5 @@ def run_scenarios(scenarios, om, sciCORE):
     shutil.copy(om['path']+"/densities.csv", "output/")
     shutil.copy(om['path']+f"/scenario_{om['version']}.xsd", f"output/scenario_{om['version']}.xsd")
     
-    if sciCORE: run_scicore(scenarios, om, sciCORE)
+    if sciCORE['use']: run_scicore(scenarios, om, sciCORE)
     else: run_local(scenarios, om)

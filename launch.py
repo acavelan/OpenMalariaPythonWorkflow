@@ -21,13 +21,6 @@ om = {
 }
 if sciCORE['use']: om['path'] = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
 
-# switch to only run, plot or both
-do_run = False
-do_extract = True
-do_plot = True
-
-hdf5file = 'output.h5'
-
 # Scaffold xml to use and a name
 scaffolds = {
     "R0000GA.xml" : "R0000GA",
@@ -36,6 +29,13 @@ scaffolds = {
     # "desc_false_vec.xml" : "desc_false_vec",
     # "desc_false_vec_het_CV5.xml" : "desc_false_vec_het_CV5",
 }
+
+# switch to only run, plot or both
+do_run = True
+do_extract = True
+do_plot = True
+
+hdf5file = 'output.h5'
 
 # Fixed
 age_groups = [0.5,1,2,5,10,15,20,100] # must reflect the xml monitoring section
@@ -123,6 +123,7 @@ if do_run:
 
 if do_extract:
     print(f'Extracting results to hdf5 file...', flush=True)
+    shutil.rmtree(hdf5file, ignore_errors = True)
     scenarios = pd.read_csv('scenarios.csv')
     extract.to_hdf5(scenarios, hdf5file)
 
