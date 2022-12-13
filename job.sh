@@ -7,7 +7,7 @@
 #SBATCH --output=%a.err #%A_%a.err
 #SBATCH --error=%a.err #%A_%a.out
 #SBATCH --mem=1G
-#SBATCH --array=1-@N@%400
+#SBATCH --array=1-@N@%1000
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
