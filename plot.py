@@ -8,15 +8,15 @@ from measures import mm, mmi
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 rc('text', usetex=True)
 
-def prevalence2to10_to_incidence(df, measures, age_groups_on_plot, age_groups, title, y_lim, filename):
-    modes = df['mode'].unique()
-    scaffoldNames = df['scaffoldName'].unique()
+def prevalence2to10_to_incidence(df, scenarios, measures, age_groups_on_plot, age_groups, title, y_lim, filename):
+    modes = scenarios['mode'].unique()
+    scaffoldNames = scenarios['scaffoldName'].unique()
 
     nx = len(scaffoldNames); ny = len(modes); f = 1; firstPlot = True
     fig = plt.figure(figsize=(12,8))
     for mode in modes:
         for scaffoldName in scaffoldNames:
-            g = df[(df["scaffoldName"] == scaffoldName) & (df["mode"] == mode)]
+            g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='count', how='inner')
 
             # compute prevalence 2 to 10
             age2to10 = (age_groups[g.ageGroup-1] >= 2) & (age_groups[g.ageGroup-1] <= 10)
@@ -62,8 +62,8 @@ def prevalence2to10_to_incidence(df, measures, age_groups_on_plot, age_groups, t
     plt.tight_layout(rect=[0.025, 0.025, 0.985, 0.985])
     fig.savefig(filename)
 
-def age_incidence(df, mode, measures, title, prev_categories, y_lim, age_groups, filename):
-    scaffoldNames = df['scaffoldName'].unique()
+def age_incidence(df, scenarios, mode, measures, title, prev_categories, y_lim, age_groups, filename):
+    scaffoldNames = scenarios['scaffoldName'].unique()
 
     nx = len(scaffoldNames); ny = 4; f = 0; firstPlot = True
     fig = plt.figure(figsize=(8,8))
@@ -72,11 +72,11 @@ def age_incidence(df, mode, measures, title, prev_categories, y_lim, age_groups,
     axes = gs.subplots(sharex='col', sharey='row').flatten()
 
     for i in range(len(prev_categories)):
-        for scaffoldName in scaffoldNames:
-            ax = axes[f]; f += 1
-                    
-            g = df[(df["scaffoldName"] == scaffoldName) & (df["mode"] == mode)]
+        for scaffoldName in scaffoldNames: 
+            g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='count', how='inner')
 
+            ax = axes[f]; f += 1
+                   
             # compute prevalence 2 to 10
             age2to10 = (age_groups[g.ageGroup-1] >= 2) & (age_groups[g.ageGroup-1] <= 10)
             nHost2to10 = g[(g.measure == mmi['nHost']) & age2to10].groupby(['eir','seed']).value.sum()
@@ -128,15 +128,14 @@ def age_incidence(df, mode, measures, title, prev_categories, y_lim, age_groups,
         plt.tight_layout(rect=[0.025, 0.025, 0.975, 0.985])
         fig.savefig(filename)
 
-def eir_to_prevalence2to10(df, mode, age_groups, filename):
-    scaffoldNames = df['scaffoldName'].unique()
+def eir_to_prevalence2to10(df, scenarios, mode, age_groups, filename):
+    scaffoldNames = scenarios['scaffoldName'].unique()
 
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(1,1,1)
 
-    for scaffoldName in scaffoldNames:
-                
-        g = df[(df["scaffoldName"] == scaffoldName) & (df["mode"] == mode)]
+    for scaffoldName in scaffoldNames:       
+        g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='count', how='inner')
 
         # compute prevalence 2 to 10
         age2to10 = (age_groups[g.ageGroup-1] >= 2) & (age_groups[g.ageGroup-1] <= 10)

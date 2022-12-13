@@ -114,7 +114,7 @@ if do_run:
     scenarios = create_scenarios()
 
     print(f'Running {len(scenarios)} scenarios...', flush=True)
-    run.run_scenarios(scenarios, hdf5file, om_path, om_version, sciCORE, sciCORE_account, sciCORE_jobName)
+    run.run_scenarios(scenarios, om_path, om_version, sciCORE, sciCORE_account, sciCORE_jobName)
     pd.DataFrame(scenarios).to_csv('scenarios.csv', index=False)
 
 if do_extract:
@@ -136,9 +136,6 @@ if do_plot:
     df = df.drop(df[df.survey == 1].index)
     df = df.groupby(['count', 'measure', 'ageGroup'], as_index=False).value.sum()
 
-    # merge with scenarios
-    df = df.merge(scenarios, how='outer')
-
     # adjust nHost for age_groups 0 to 1 
     yearsAtRisk = np.array(age_groups)
     yearsAtRisk[yearsAtRisk > 1] = 1
@@ -146,19 +143,19 @@ if do_plot:
 
     print(f'Plotting... ', flush=True)
     age_groups_on_plot = [[0,5],[5,10],[10,15],[15,20]]
-    plot.prevalence2to10_to_incidence(df, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'output/fig/prevalence_to_incidence.pdf')
-    plot.prevalence2to10_to_incidence(df, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'output/fig/prevalence_to_severe.pdf')
-    plot.prevalence2to10_to_incidence(df, ['expectedDirectDeaths', 'expectedIndirectDeaths'], age_groups_on_plot, age_groups, 'Mortality (events per person per year)', [0, 0.03], f'output/fig/prevalence_to_death.pdf')
+    plot.prevalence2to10_to_incidence(df, scenarios, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'output/fig/prevalence_to_incidence.pdf')
+    plot.prevalence2to10_to_incidence(df, scenarios, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'output/fig/prevalence_to_severe.pdf')
+    plot.prevalence2to10_to_incidence(df, scenarios, ['expectedDirectDeaths', 'expectedIndirectDeaths'], age_groups_on_plot, age_groups, 'Mortality (events per person per year)', [0, 0.03], f'output/fig/prevalence_to_death.pdf')
 
     prev_categories = [[0.5,5],[6,14],[22,38],[43,57]]
-    for mode in df['mode'].unique():
-        plot.age_incidence(df, mode, ['nUncomp'], 'Clinical incidence (events per person per year)', prev_categories, [0, 5.9], age_groups, f'output/fig/age_incidence_{mode}.pdf')
-        plot.age_incidence(df, mode, ['expectedSevere'], 'Severe cases (events per person per year)', prev_categories, [0, 0.25], age_groups, f'output/fig/age_severe_{mode}.pdf')
-        plot.age_incidence(df, mode, ['expectedDirectDeaths', 'expectedIndirectDeaths'], 'Mortality (events per person per year)', prev_categories, [0, 0.06], age_groups, f'output/fig/age_death_{mode}.pdf')
+    for mode in scenarios['mode'].unique():
+        plot.age_incidence(df, scenarios, mode, ['nUncomp'], 'Clinical incidence (events per person per year)', prev_categories, [0, 5.9], age_groups, f'output/fig/age_incidence_{mode}.pdf')
+        plot.age_incidence(df, scenarios, mode, ['expectedSevere'], 'Severe cases (events per person per year)', prev_categories, [0, 0.25], age_groups, f'output/fig/age_severe_{mode}.pdf')
+        plot.age_incidence(df, scenarios, mode, ['expectedDirectDeaths', 'expectedIndirectDeaths'], 'Mortality (events per person per year)', prev_categories, [0, 0.06], age_groups, f'output/fig/age_death_{mode}.pdf')
         
-    for mode in df['mode'].unique():
-        plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
-        plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
-        plot.eir_to_prevalence2to10(df, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
+    for mode in scenarios['mode'].unique():
+        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
+        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
+        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
     
     print(f'Done.', flush=True)

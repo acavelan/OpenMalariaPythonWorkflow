@@ -45,7 +45,7 @@ def run_local(scenarios, om_path):
         except subprocess.TimeoutExpired:
             p.kill()
 
-def run_scenarios(scenarios, hdf5file, om_path, om_version, sciCORE=False, sciCORE_account="penny", sciCORE_jobName="OpenMalaria"):
+def run_scenarios(scenarios, om_path, om_version, sciCORE=False, sciCORE_account="penny", sciCORE_jobName="OpenMalaria"):
     shutil.copy(om_path+'/densities.csv', "output/")
     shutil.copy(om_path+f'/scenario_{om_version}.xsd', f'output/scenario_{om_version}.xsd')
     
