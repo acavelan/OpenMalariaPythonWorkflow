@@ -35,7 +35,7 @@ do_run = True
 do_extract = True
 do_plot = True
 
-hdf5file = 'output.h5'
+experiment = 'test'
 
 # Fixed
 age_groups = [0.5,1,2,5,10,15,20,100] # must reflect the xml monitoring section
@@ -47,15 +47,15 @@ end_year = 2020
 outdoor_biting = 0.2
 
 # Variable
-seeds = 15
+seeds = 10
 modes = ["perennial", "seasonal"]
 eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 65, 70, 80, 90, 100, 120, 150, 200, 250, 500, 750, 1000]
 
 # Test (12 scenarios with 2000 popsize); uncomment to overwrite other settings and do a quick test
-pop_size = 300
-eirs = [2, 10, 20, 40, 60, 80, 100, 200]
-modes = ["perennial", "seasonal"]
-seeds = 3
+# pop_size = 300
+# eirs = [2, 10, 20, 40]#, 60, 80, 100, 200]
+# modes = ["perennial", "seasonal"]
+# seeds = 3
 
 # Computed
 burn_in = start_year - burn_in_years
@@ -101,36 +101,36 @@ def create_scenarios():
                     for i in range(1,13):
                         scenario = scenario.replace(f'@seasonality{i}@', str(seasonality[i-1]))
                 
-                    with open(f"output/xml/{count}.xml", 'w') as fo:
+                    with open(f"{experiment}/xml/{count}.xml", 'w') as fo:
                         fo.write(f"{scenario}")
                         scenarios.append({"scaffoldName": scaffoldName, "eir": eir, "seed": seed, "mode": mode, "count": count})
                         count += 1
     return scenarios
 
 if do_run:
-    print(f'Cleaning Tree...', flush=True)
-    shutil.rmtree("output", ignore_errors = True)
-    os.makedirs(os.path.relpath(f"output/xml"), exist_ok=True)
-    os.makedirs(os.path.relpath(f"output/txt"), exist_ok=True)
-    os.makedirs(os.path.relpath(f"output/fig"), exist_ok=True)
+    print(f"Cleaning Tree...", flush=True)
+    shutil.rmtree("{experiment}", ignore_errors = True)
+    os.makedirs(os.path.relpath(f"{experiment}/xml"), exist_ok=True)
+    os.makedirs(os.path.relpath(f"{experiment}/txt"), exist_ok=True)
+    os.makedirs(os.path.relpath(f"{experiment}/fig"), exist_ok=True)
 
-    print(f'Creating scenarios...', flush=True)
+    print(f"Creating scenarios...", flush=True)
     scenarios = create_scenarios()
 
-    print(f'Running {len(scenarios)} scenarios...', flush=True)
-    run.run_scenarios(scenarios, om, sciCORE)
+    print(f"Running {len(scenarios)} scenarios...", flush=True)
+    run.run_scenarios(scenarios, experiment, om, sciCORE)
     pd.DataFrame(scenarios).to_csv('scenarios.csv', index=False)
 
 if do_extract:
-    print(f'Extracting results to hdf5 file...', flush=True)
-    shutil.rmtree(hdf5file, ignore_errors = True)
+    print(f"Extracting results to hdf5 file...", flush=True)
+    shutil.rmtree(f"{experiment}/output.h5", ignore_errors = True)
     scenarios = pd.read_csv('scenarios.csv')
-    extract.to_hdf5(scenarios, hdf5file)
+    extract.to_hdf5(scenarios, experiment)
 
 if do_plot:
     print(f"Loading...", flush=True)
     scenarios = pd.read_csv('scenarios.csv')
-    df = pd.read_hdf('output.h5', key='data')
+    df = pd.read_hdf(f"{experiment}/output.h5", key='data')
 
     # User part below
     print(f"Post processing...", flush=True)
@@ -148,19 +148,19 @@ if do_plot:
 
     print(f"Plotting...", flush=True)
     age_groups_on_plot = [[0,5],[5,10],[10,15],[15,20]]
-    plot.prevalence2to10_to_incidence(df, scenarios, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'output/fig/prevalence_to_incidence.pdf')
-    plot.prevalence2to10_to_incidence(df, scenarios, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'output/fig/prevalence_to_severe.pdf')
-    plot.prevalence2to10_to_incidence(df, scenarios, ['expectedDirectDeaths', 'expectedIndirectDeaths'], age_groups_on_plot, age_groups, 'Mortality (events per person per year)', [0, 0.03], f'output/fig/prevalence_to_death.pdf')
+    plot.prevalence2to10_to_incidence(df, scenarios, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'{experiment}/fig/prevalence_to_incidence.pdf')
+    plot.prevalence2to10_to_incidence(df, scenarios, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'{experiment}/fig/prevalence_to_severe.pdf')
+    plot.prevalence2to10_to_incidence(df, scenarios, ['expectedDirectDeaths', 'expectedIndirectDeaths'], age_groups_on_plot, age_groups, 'Mortality (events per person per year)', [0, 0.03], f'{experiment}/fig/prevalence_to_death.pdf')
 
     prev_categories = [[0.5,5],[6,14],[22,38],[43,57]]
     for mode in scenarios['mode'].unique():
-        plot.age_incidence(df, scenarios, mode, ['nUncomp'], 'Clinical incidence (events per person per year)', prev_categories, [0, 5.9], age_groups, f'output/fig/age_incidence_{mode}.pdf')
-        plot.age_incidence(df, scenarios, mode, ['expectedSevere'], 'Severe cases (events per person per year)', prev_categories, [0, 0.25], age_groups, f'output/fig/age_severe_{mode}.pdf')
-        plot.age_incidence(df, scenarios, mode, ['expectedDirectDeaths', 'expectedIndirectDeaths'], 'Mortality (events per person per year)', prev_categories, [0, 0.06], age_groups, f'output/fig/age_death_{mode}.pdf')
+        plot.age_incidence(df, scenarios, mode, ['nUncomp'], 'Clinical incidence (events per person per year)', prev_categories, [0, 5.9], age_groups, f'{experiment}/fig/age_incidence_{mode}.pdf')
+        plot.age_incidence(df, scenarios, mode, ['expectedSevere'], 'Severe cases (events per person per year)', prev_categories, [0, 0.25], age_groups, f'{experiment}/fig/age_severe_{mode}.pdf')
+        plot.age_incidence(df, scenarios, mode, ['expectedDirectDeaths', 'expectedIndirectDeaths'], 'Mortality (events per person per year)', prev_categories, [0, 0.06], age_groups, f'{experiment}/fig/age_death_{mode}.pdf')
         
     for mode in scenarios['mode'].unique():
-        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
-        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
-        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
+        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
+        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
+        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
     
     print(f"Done.", flush=True)
