@@ -8,21 +8,25 @@ import plot
 from measures import mm, mmi
 
 # if using the sciCORE cluster:
-sciCORE = False
-sciCORE_account = "penny"
-sciCORE_jobName = "OpenMalaria"
+sciCORE = {
+    'use' : False,
+    'account' : 'penny',
+    'jobName' : 'OpenMalaria'
+}
 
 # OpenMalaria
-om_version = 44
-om_path = "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
-if sciCORE: om_path = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
-
-hdf5file = 'output.h5'
+om = { 
+    'version' : 44,
+    'path' : "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
+}
+if sciCORE['use']: om['path'] = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
 
 # switch to only run, plot or both
 do_run = False
 do_extract = True
 do_plot = True
+
+hdf5file = 'output.h5'
 
 # Scaffold xml to use and a name
 scaffolds = {
@@ -72,17 +76,17 @@ def create_scenarios():
     scenarios = []
     for scaffoldXml, scaffoldName in scaffolds.items():
         xml = None
-        with open(f'scaffolds/{scaffoldXml}', "r") as fp:
+        with open(f"scaffolds/{scaffoldXml}", "r") as fp:
             xml = fp.read()
 
-        xml = xml.replace(f'@version@', f'{om_version}')
-        xml = xml.replace(f'@pop_size@', f'{pop_size}')
-        xml = xml.replace(f'@burn_in@', f'{burn_in}')
-        xml = xml.replace(f'@access@', f'{access}')
-        xml = xml.replace(f'@start_year@', f'{start_year}')
-        xml = xml.replace(f'@end_year@', f'{end_year}')
-        xml = xml.replace(f'@indoor@', f'{indoor}')
-        xml = xml.replace(f'@outdoor@', f'{outdoor}')
+        xml = xml.replace(f"@version@", f"{om['version']}")
+        xml = xml.replace(f"@pop_size@", f"{pop_size}")
+        xml = xml.replace(f"@burn_in@", f"{burn_in}")
+        xml = xml.replace(f"@access@", f"{access}")
+        xml = xml.replace(f"@start_year@", f"{start_year}")
+        xml = xml.replace(f"@end_year@", f"{end_year}")
+        xml = xml.replace(f"@indoor@", f"{indoor}")
+        xml = xml.replace(f"@outdoor@", f"{outdoor}")
 
         for eir in eirs:
             for seed in range(0,seeds):
@@ -97,8 +101,8 @@ def create_scenarios():
                     for i in range(1,13):
                         scenario = scenario.replace(f'@seasonality{i}@', str(seasonality[i-1]))
                 
-                    with open(f'output/xml/{count}.xml', 'w') as fo:
-                        fo.write(f'{scenario}')
+                    with open(f"output/xml/{count}.xml", 'w') as fo:
+                        fo.write(f"{scenario}")
                         scenarios.append({"scaffoldName": scaffoldName, "eir": eir, "seed": seed, "mode": mode, "count": count})
                         count += 1
     return scenarios
@@ -106,15 +110,15 @@ def create_scenarios():
 if do_run:
     print(f'Cleaning Tree...', flush=True)
     shutil.rmtree("output", ignore_errors = True)
-    os.makedirs(os.path.relpath(f'output/xml'), exist_ok=True)
-    os.makedirs(os.path.relpath(f'output/txt'), exist_ok=True)
-    os.makedirs(os.path.relpath(f'output/fig'), exist_ok=True)
+    os.makedirs(os.path.relpath(f"output/xml"), exist_ok=True)
+    os.makedirs(os.path.relpath(f"output/txt"), exist_ok=True)
+    os.makedirs(os.path.relpath(f"output/fig"), exist_ok=True)
 
     print(f'Creating scenarios...', flush=True)
     scenarios = create_scenarios()
 
     print(f'Running {len(scenarios)} scenarios...', flush=True)
-    run.run_scenarios(scenarios, om_path, om_version, sciCORE, sciCORE_account, sciCORE_jobName)
+    run.run_scenarios(scenarios, om, sciCORE)
     pd.DataFrame(scenarios).to_csv('scenarios.csv', index=False)
 
 if do_extract:
@@ -123,12 +127,12 @@ if do_extract:
     extract.to_hdf5(scenarios, hdf5file)
 
 if do_plot:
-    print(f'Loading...', flush=True)
+    print(f"Loading...", flush=True)
     scenarios = pd.read_csv('scenarios.csv')
     df = pd.read_hdf('output.h5', key='data')
 
     # User part below
-    print(f'Post processing... ', flush=True)
+    print(f"Post processing...", flush=True)
     df = df.dropna() # drop rows with NaN
     df = df.reset_index(drop=True)
     
@@ -141,7 +145,7 @@ if do_plot:
     yearsAtRisk[yearsAtRisk > 1] = 1
     df.loc[(df.measure == mmi['nHost']), 'value'] *= yearsAtRisk[df[(df.measure == mmi['nHost'])].ageGroup-1]
 
-    print(f'Plotting... ', flush=True)
+    print(f"Plotting...", flush=True)
     age_groups_on_plot = [[0,5],[5,10],[10,15],[15,20]]
     plot.prevalence2to10_to_incidence(df, scenarios, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'output/fig/prevalence_to_incidence.pdf')
     plot.prevalence2to10_to_incidence(df, scenarios, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'output/fig/prevalence_to_severe.pdf')
@@ -158,4 +162,4 @@ if do_plot:
         plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
         plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'output/fig/eir_to_prevalence_{mode}.pdf')
     
-    print(f'Done.', flush=True)
+    print(f"Done.", flush=True)
