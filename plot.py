@@ -62,7 +62,7 @@ def prevalence2to10_to_incidence(df, scenarios, measures, age_groups_on_plot, ag
     plt.tight_layout(rect=[0.025, 0.025, 0.985, 0.985])
     fig.savefig(filename)
 
-def age_incidence(df, scenarios, mode, measures, title, prev_categories, y_lim, age_groups, filename):
+def age_incidence(df, scenarios, mode, measures, title, prev_categories, age_groups, filename):
     scaffoldNames = scenarios['scaffoldName'].unique()
 
     nx = len(scaffoldNames); ny = 4; f = 0; firstPlot = True
@@ -70,6 +70,8 @@ def age_incidence(df, scenarios, mode, measures, title, prev_categories, y_lim, 
 
     gs = fig.add_gridspec(ny, nx, hspace=0, wspace=0)
     axes = gs.subplots(sharex='col', sharey='row').flatten()
+
+    maxIncidences = np.zeros(len(prev_categories))
 
     for i in range(len(prev_categories)):
         for scaffoldName in scaffoldNames: 
@@ -106,28 +108,35 @@ def age_incidence(df, scenarios, mode, measures, title, prev_categories, y_lim, 
             
             ages = age_groups[incidence.mean().index - 1]
 
+            # compute max incidence for each prev_category
+            if incidence.max().max() > maxIncidences[i]: maxIncidences[i] = incidence.max().max()
+
             # plot mean, min and max of seeds and EIR
             ax.plot(ages, incidence.mean(), marker='o', label=f"{scaffoldName}")
             ax.fill_between(ages, incidence.min(), incidence.max(), alpha=0.3)
-
-            ax.set_ylim(y_lim)
             ax.set_xticks([0.0, 5.0, 10.0, 15,0, 20.0])
             ax.set_xticklabels([0.0, 5.0, 10.0, 15,0, 20.0])
     
-        for i in range(0, len(scaffoldNames)):
-            coord = (i+1)/len(scaffoldNames)-1.0/len(scaffoldNames)/2
-            fig.text(coord, 0.98, scaffoldNames[i], ha='center', va='center', fontsize=16)
-        
-        for i in range(0, len(prev_categories)):
-            prev_cat = prev_categories[i]
-            coord = (i+1)/len(prev_categories)-1.0/len(prev_categories)/2
-            fig.text(0.98, 1-coord, f'PfPR_{prev_cat[0]}-{prev_cat[1]}\%', ha='center', va='center', rotation=-90, fontsize=16)
-        
-        fig.text(0.02, 0.5, title, ha='center', va='center', rotation='vertical', fontsize=16)
-        fig.text(0.5, 0.02, 'age', ha='center', va='center', fontsize=16)
-        plt.tight_layout(rect=[0.025, 0.025, 0.975, 0.985])
-        fig.savefig(filename)
+    for i in range(0, len(scaffoldNames)):
+        coord = (i+1)/len(scaffoldNames)-1.0/len(scaffoldNames)/2
+        fig.text(coord, 0.98, scaffoldNames[i], ha='center', va='center', fontsize=16)
+    
+    for i in range(0, len(prev_categories)):
+        prev_cat = prev_categories[i]
+        coord = (i+1)/len(prev_categories)-1.0/len(prev_categories)/2
+        fig.text(0.98, 1-coord, f'PfPR_{prev_cat[0]}-{prev_cat[1]}\%', ha='center', va='center', rotation=-90, fontsize=16)
+    
+    f = 0
+    for i in range(len(prev_categories)):
+        for scaffoldName in scaffoldNames: 
+            axes[f].set_ylim([0, maxIncidences[i]])
+            f += 1
 
+    fig.text(0.02, 0.5, title, ha='center', va='center', rotation='vertical', fontsize=16)
+    fig.text(0.5, 0.02, 'age', ha='center', va='center', fontsize=16)
+    plt.tight_layout(rect=[0.025, 0.025, 0.975, 0.985])
+    fig.savefig(filename)
+    
 def eir_to_prevalence2to10(df, scenarios, mode, age_groups, filename):
     scaffoldNames = scenarios['scaffoldName'].unique()
 
