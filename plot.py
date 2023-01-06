@@ -172,3 +172,52 @@ def eir_to_prevalence2to10(df, scenarios, mode, age_groups, filename):
     ax.set_ylabel('PfPR_{2-10}\%')
     plt.tight_layout()
     fig.savefig(filename)
+
+experiment = 'test'
+
+age_groups = np.array([0.5,1,2,5,10,15,20,100]) # must reflect the xml monitoring section
+age_group_labels = [str(age_groups[i-1])+"-"+str(age_groups[i]) for i in range(1, len(age_groups))]
+age_group_labels = [str(0)+"-"+str(age_groups[0])] + age_group_labels
+
+print(f"Loading...", flush=True)
+scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
+# df = pd.read_csv(f"{experiment}/output.csv")
+df = pd.read_hdf(f"{experiment}/output.h5", key='data')
+df.reset_index(inplace=True)
+
+# User part below
+print(f"Post processing...", flush=True)
+df.dropna(inplace=True)
+
+# remove first survey
+df.drop(df[df.survey == 1].index, inplace=True)
+
+# reset index
+df.reset_index(inplace=True) # drop rows with NaN
+
+# Sum the surveys
+df = df.groupby(['count', 'measure', 'ageGroup'], as_index=False).value.sum()
+
+# adjust nHost for age_groups 0 to 1 
+yearsAtRisk = np.array(age_groups)
+yearsAtRisk[yearsAtRisk > 1] = 1
+df.loc[(df.measure == mmi['nHost']), 'value'] *= yearsAtRisk[df[(df.measure == mmi['nHost'])].ageGroup-1]
+
+print(f"Plotting...", flush=True)
+age_groups_on_plot = [[0,5],[5,10],[10,15],[15,20]]
+prevalence2to10_to_incidence(df, scenarios, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'{experiment}/fig/prevalence_to_incidence.pdf')
+prevalence2to10_to_incidence(df, scenarios, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'{experiment}/fig/prevalence_to_severe.pdf')
+prevalence2to10_to_incidence(df, scenarios, ['expectedDirectDeaths', 'expectedIndirectDeaths'], age_groups_on_plot, age_groups, 'Mortality (events per person per year)', [0, 0.03], f'{experiment}/fig/prevalence_to_death.pdf')
+
+prev_categories = [[0.5,5],[6,14],[22,38],[43,57]]
+for mode in scenarios['mode'].unique():
+    age_incidence(df, scenarios, mode, ['nUncomp'], 'Clinical incidence (events per person per year)', prev_categories, age_groups, f'{experiment}/fig/age_incidence_{mode}.pdf')
+    age_incidence(df, scenarios, mode, ['expectedSevere'], 'Severe cases (events per person per year)', prev_categories, age_groups, f'{experiment}/fig/age_severe_{mode}.pdf')
+    age_incidence(df, scenarios, mode, ['expectedDirectDeaths', 'expectedIndirectDeaths'], 'Mortality (events per person per year)', prev_categories, age_groups, f'{experiment}/fig/age_death_{mode}.pdf')
+    
+for mode in scenarios['mode'].unique():
+    eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
+    eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
+    eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
+
+print(f"Done.", flush=True)

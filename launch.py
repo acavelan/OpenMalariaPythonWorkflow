@@ -2,7 +2,6 @@ import math, os, sys, subprocess, torch, shutil
 import pandas as pd
 import numpy as np
 import run, extract
-import plot
 
 # dictionary of OpenMalaria measure name <-> output number
 from measures import mm, mmi
@@ -33,12 +32,10 @@ scaffolds = {
 # switch to only run, plot or both
 do_run = False
 do_extract = False
-do_plot = True
 
 experiment = 'test'
 
 # Fixed
-age_groups = [0.5,1,2,5,10,15,20,100] # must reflect the xml monitoring section
 pop_size = 10000
 burn_in_years = 30
 access = 0.2029544 # 5-day probability
@@ -61,9 +58,6 @@ eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12
 burn_in = start_year - burn_in_years
 outdoor = outdoor_biting
 indoor = 1.0 - outdoor
-age_groups = np.array(age_groups)
-age_group_labels = [str(age_groups[i-1])+"-"+str(age_groups[i]) for i in range(1, len(age_groups))]
-age_group_labels = [str(0)+"-"+str(age_groups[0])] + age_group_labels
 
 # Define functional form of non-perennial, seasonal setting
 season_daily = 1 + np.sin(2 * np.pi * (np.arange(0,365) / 365))
@@ -122,50 +116,8 @@ if do_run:
     pd.DataFrame(scenarios).to_csv(f'{experiment}/scenarios.csv', index=False)
 
 if do_extract:
-    print(f"Extracting results to hdf5 file...", flush=True)
+    print(f"Extracting results...", flush=True)
     shutil.rmtree(f"{experiment}/output.h5", ignore_errors = True)
     scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
-    extract.to_hdf5(scenarios, experiment)
-
-if do_plot:
-    print(f"Loading...", flush=True)
-    scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
-    df = pd.read_hdf(f"{experiment}/output.h5", key='data')
-    df.reset_index(inplace=True)
-
-    # User part below
-    print(f"Post processing...", flush=True)
-    df.dropna(inplace=True)
-
-    # remove first survey
-    df.drop(df[df.survey == 1].index, inplace=True)
-
-    # reset index
-    df.reset_index(inplace=True) # drop rows with NaN
-
-    # Sum the surveys
-    df = df.groupby(['count', 'measure', 'ageGroup'], as_index=False).value.sum()
-
-    # adjust nHost for age_groups 0 to 1 
-    yearsAtRisk = np.array(age_groups)
-    yearsAtRisk[yearsAtRisk > 1] = 1
-    df.loc[(df.measure == mmi['nHost']), 'value'] *= yearsAtRisk[df[(df.measure == mmi['nHost'])].ageGroup-1]
-
-    print(f"Plotting...", flush=True)
-    age_groups_on_plot = [[0,5],[5,10],[10,15],[15,20]]
-    plot.prevalence2to10_to_incidence(df, scenarios, ['nUncomp'], age_groups_on_plot, age_groups, 'Clinical incidence (events per person per year)', [0, 6], f'{experiment}/fig/prevalence_to_incidence.pdf')
-    plot.prevalence2to10_to_incidence(df, scenarios, ['expectedSevere'], age_groups_on_plot, age_groups, 'Severe cases (events per person per year)', [0, 0.1], f'{experiment}/fig/prevalence_to_severe.pdf')
-    plot.prevalence2to10_to_incidence(df, scenarios, ['expectedDirectDeaths', 'expectedIndirectDeaths'], age_groups_on_plot, age_groups, 'Mortality (events per person per year)', [0, 0.03], f'{experiment}/fig/prevalence_to_death.pdf')
-
-    prev_categories = [[0.5,5],[6,14],[22,38],[43,57]]
-    for mode in scenarios['mode'].unique():
-        plot.age_incidence(df, scenarios, mode, ['nUncomp'], 'Clinical incidence (events per person per year)', prev_categories, age_groups, f'{experiment}/fig/age_incidence_{mode}.pdf')
-        plot.age_incidence(df, scenarios, mode, ['expectedSevere'], 'Severe cases (events per person per year)', prev_categories, age_groups, f'{experiment}/fig/age_severe_{mode}.pdf')
-        plot.age_incidence(df, scenarios, mode, ['expectedDirectDeaths', 'expectedIndirectDeaths'], 'Mortality (events per person per year)', prev_categories, age_groups, f'{experiment}/fig/age_death_{mode}.pdf')
-        
-    for mode in scenarios['mode'].unique():
-        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
-        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
-        plot.eir_to_prevalence2to10(df, scenarios, mode, age_groups, f'{experiment}/fig/eir_to_prevalence_{mode}.pdf')
-    
-    print(f"Done.", flush=True)
+    extract.to_csv(scenarios, experiment)
+    # extract.to_hdf5(scenarios, experiment)

@@ -1,7 +1,7 @@
 import pandas as pd
 import shutil
 
-def to_hdf5(scenarios, experiment):
+def to_df(scenarios, experiment):
     data = []
     for _, scenario in scenarios.iterrows():
         try:
@@ -10,9 +10,13 @@ def to_hdf5(scenarios, experiment):
             output.columns = ['survey', 'ageGroup', 'measure', 'value']
             output['count'] = count
             data.append(output)
-            # output.to_hdf(hdf5file, key='data', mode='a', append=True, data_columns=True, format='table', index=False, complib='blosc:blosclz', complevel=9)
         except Exception as e:
             print(e)
+    
+    return pd.concat(data)
 
-    data = pd.concat(data)
-    data.to_hdf(f"{experiment}/output.h5", key='data', mode='w', data_columns=True, format='table', index=False, complib='blosc:blosclz', complevel=9)
+def to_hdf5(scenarios, experiment):
+    to_df(scenarios, experiment).to_hdf(f"{experiment}/output.h5", key='data', mode='w', data_columns=True, format='table', index=False, complib='blosc:blosclz', complevel=9)
+
+def to_csv(scenarios, experiment):
+    to_df(scenarios, experiment).to_csv(f"{experiment}/output.h5", index=False, compression='gzip')
