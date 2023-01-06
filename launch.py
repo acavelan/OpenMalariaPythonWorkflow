@@ -115,10 +115,9 @@ if do_run:
 # concatenate all txt outputs from OpenMalaria to a nice output.csv file
 if do_extract:
     print(f"Extracting results...", flush=True)
-    shutil.rmtree(f"{experiment}/output.h5", ignore_errors = True)
+    shutil.rmtree(f"{experiment}/output.csv", ignore_errors = True)
     scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
     extract.to_csv(scenarios, experiment)
-    # extract.to_hdf5(scenarios, experiment)
 
 # load scenarios.csv and output.csv as dataframes
 # merge them (on the 'count' column) to get all the data in one place

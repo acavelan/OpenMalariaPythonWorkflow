@@ -181,8 +181,7 @@ age_group_labels = [str(0)+"-"+str(age_groups[0])] + age_group_labels
 
 print(f"Loading...", flush=True)
 scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
-# df = pd.read_csv(f"{experiment}/output.csv")
-df = pd.read_hdf(f"{experiment}/output.h5", key='data')
+df = pd.read_csv(f"{experiment}/output.csv")
 df.reset_index(inplace=True)
 
 # User part below
