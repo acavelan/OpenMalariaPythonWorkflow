@@ -10,7 +10,6 @@ def run_scicore(scenarios, experiment, om, sciCORE):
         for scenario in scenarios:
             count = scenario["count"]
             outputfile = f"txt/{scenario['count']}.txt"
-            toHDF5 = os.path.dirname(os.path.realpath(__file__)) + "/toHDF5.py"
             command = f"openMalaria -s xml/{count}.xml --output {outputfile}"
             batch_file.write(f"export PATH=$PATH:{om['path']} && {command}\n")
 
@@ -32,7 +31,6 @@ def run_local(scenarios, experiment, om):
     for scenario in scenarios:
         count = scenario["count"]
         outputfile = f"txt/{scenario['count']}.txt"
-        toHDF5 = os.path.dirname(os.path.realpath(__file__)) + "/toHDF5.py"
         command = f"openMalaria -s xml/{count}.xml --output {outputfile}"
         processes.append(exec(f"export PATH=$PATH:{om['path']} && cd {experiment} && {command}"))
 
