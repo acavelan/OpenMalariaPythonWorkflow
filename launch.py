@@ -101,6 +101,7 @@ def create_scenarios():
                         count += 1
     return scenarios
 
+# run all the scenarios and write the scenarios metadata to scenarios.csv
 if do_run:
     print(f"Cleaning Tree...", flush=True)
     shutil.rmtree("{experiment}", ignore_errors = True)
@@ -115,9 +116,13 @@ if do_run:
     run.run_scenarios(scenarios, experiment, om, sciCORE)
     pd.DataFrame(scenarios).to_csv(f'{experiment}/scenarios.csv', index=False)
 
+# concatenate all txt outputs from OpenMalaria to a nice output.csv file
 if do_extract:
     print(f"Extracting results...", flush=True)
     shutil.rmtree(f"{experiment}/output.h5", ignore_errors = True)
     scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
     extract.to_csv(scenarios, experiment)
     # extract.to_hdf5(scenarios, experiment)
+
+# load scenarios.csv and output.csv as dataframes
+# merge them (on the 'count' column) to get all the data in one place
