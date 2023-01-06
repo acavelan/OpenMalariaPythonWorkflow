@@ -20,7 +20,7 @@ om = {
 }
 if sciCORE['use']: om['path'] = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
 
-# Scaffold xml to use and a name
+# Scaffold xml to use
 scaffolds = {
     "R0000GA"
 }
