@@ -22,11 +22,7 @@ if sciCORE['use']: om['path'] = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
 
 # Scaffold xml to use and a name
 scaffolds = {
-    "R0000GA.xml" : "R0000GA",
-    # "desc_true.xml" : "desc_true",
-    # "desc_true_vec.xml" : "desc_true_vec",
-    # "desc_false_vec.xml" : "desc_false_vec",
-    # "desc_false_vec_het_CV5.xml" : "desc_false_vec_het_CV5",
+    "R0000GA"
 }
 
 # switch to only run, plot or both
@@ -61,16 +57,16 @@ indoor = 1.0 - outdoor
 
 # Define functional form of non-perennial, seasonal setting
 season_daily = 1 + np.sin(2 * np.pi * (np.arange(0,365) / 365))
-season_month = season_daily[13:365:30]
+season_month = season_month = [season_daily[1+int(i*(365/12))] for i in range(0, 12)]
 season_month = season_month / np.max(season_month)
     
 # return a list of scenarios
 def create_scenarios():
     count = 0
     scenarios = []
-    for scaffoldXml, scaffoldName in scaffolds.items():
+    for scaffold in scaffolds.items():
         xml = None
-        with open(f"scaffolds/{scaffoldXml}", "r") as fp:
+        with open(f"scaffolds/{scaffold}.xml", "r") as fp:
             xml = fp.read()
 
         xml = xml.replace(f"@version@", f"{om['version']}")
@@ -97,7 +93,7 @@ def create_scenarios():
                 
                     with open(f"{experiment}/xml/{count}.xml", 'w') as fo:
                         fo.write(f"{scenario}")
-                        scenarios.append({"scaffoldName": scaffoldName, "eir": eir, "seed": seed, "mode": mode, "count": count})
+                        scenarios.append({"scaffoldName": scaffold, "eir": eir, "seed": seed, "mode": mode, "count": count})
                         count += 1
     return scenarios
 
