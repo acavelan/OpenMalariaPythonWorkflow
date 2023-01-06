@@ -57,7 +57,7 @@ indoor = 1.0 - outdoor
 
 # Define functional form of non-perennial, seasonal setting
 season_daily = 1 + np.sin(2 * np.pi * (np.arange(0,365) / 365))
-season_month = season_month = [season_daily[1+int(i*(365/12))] for i in range(0, 12)]
+season_month = [season_daily[1+int(i*(365/12))] for i in range(0, 12)]
 season_month = season_month / np.max(season_month)
     
 # return a list of scenarios
