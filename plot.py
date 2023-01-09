@@ -181,12 +181,21 @@ age_group_labels = [str(0)+"-"+str(age_groups[0])] + age_group_labels
 
 print(f"Loading...", flush=True)
 scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
-df = pd.read_csv(f"{experiment}/output.csv", compression='gzip')
+df = pd.read_csv(f"{experiment}/output.csv")
 df.reset_index(drop=True, inplace=True)
 
 # User part below
 print(f"Post processing...", flush=True)
 df.dropna(inplace=True)
+
+# change types
+df = df.astype(dtype = {
+    'survey' : np.int32,
+    'ageGroup' : np.int32,
+    'measure' : np.int32,
+    'value' : np.float64,
+    'index' : np.int32
+})
 
 # remove first survey
 df.drop(df[df.survey == 1].index, inplace=True)
@@ -200,6 +209,7 @@ df = df.groupby(['index', 'measure', 'ageGroup'], as_index=False).value.sum()
 # adjust nHost for age_groups 0 to 1 
 yearsAtRisk = np.array(age_groups)
 yearsAtRisk[yearsAtRisk > 1] = 1
+
 df.loc[(df.measure == mmi['nHost']), 'value'] *= yearsAtRisk[df[(df.measure == mmi['nHost'])].ageGroup-1]
 
 print(f"Plotting...", flush=True)
