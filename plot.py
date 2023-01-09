@@ -16,7 +16,7 @@ def prevalence2to10_to_incidence(df, scenarios, measures, age_groups_on_plot, ag
     fig = plt.figure(figsize=(12,8))
     for mode in modes:
         for scaffoldName in scaffoldNames:
-            g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='count', how='inner')
+            g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='index', how='inner')
 
             # compute prevalence 2 to 10
             age2to10 = (age_groups[g.ageGroup-1] >= 2) & (age_groups[g.ageGroup-1] <= 10)
@@ -75,7 +75,7 @@ def age_incidence(df, scenarios, mode, measures, title, prev_categories, age_gro
 
     for i in range(len(prev_categories)):
         for scaffoldName in scaffoldNames: 
-            g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='count', how='inner')
+            g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='index', how='inner')
 
             ax = axes[f]; f += 1
                    
@@ -144,7 +144,7 @@ def eir_to_prevalence2to10(df, scenarios, mode, age_groups, filename):
     ax = fig.add_subplot(1,1,1)
 
     for scaffoldName in scaffoldNames:       
-        g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='count', how='inner')
+        g = df.merge(scenarios[(scenarios["scaffoldName"] == scaffoldName) & (scenarios["mode"] == mode)], on='index', how='inner')
 
         # compute prevalence 2 to 10
         age2to10 = (age_groups[g.ageGroup-1] >= 2) & (age_groups[g.ageGroup-1] <= 10)
@@ -181,8 +181,8 @@ age_group_labels = [str(0)+"-"+str(age_groups[0])] + age_group_labels
 
 print(f"Loading...", flush=True)
 scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
-df = pd.read_csv(f"{experiment}/output.csv")
-df.reset_index(inplace=True)
+df = pd.read_csv(f"{experiment}/output.csv", compression='gzip')
+df.reset_index(drop=True, inplace=True)
 
 # User part below
 print(f"Post processing...", flush=True)
@@ -195,7 +195,7 @@ df.drop(df[df.survey == 1].index, inplace=True)
 df.reset_index(inplace=True) # drop rows with NaN
 
 # Sum the surveys
-df = df.groupby(['count', 'measure', 'ageGroup'], as_index=False).value.sum()
+df = df.groupby(['index', 'measure', 'ageGroup'], as_index=False).value.sum()
 
 # adjust nHost for age_groups 0 to 1 
 yearsAtRisk = np.array(age_groups)

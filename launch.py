@@ -8,7 +8,7 @@ from measures import mm, mmi
 
 # if using the sciCORE cluster:
 sciCORE = {
-    'use' : False,
+    'use' : True,
     'account' : 'penny',
     'jobName' : 'OpenMalaria'
 }
@@ -27,33 +27,23 @@ scaffolds = {
 
 # switch to only run, plot or both
 do_run = False
-do_extract = False
+do_extract = True
 
-experiment = 'test'
+experiment = 'test' # name of the experiment folder
 
-# Fixed
-pop_size = 10000
-burn_in_years = 30
+# Fixed parameters for all xmls
+pop_size = 10000 # number of humans
+start_year = 2000 # start of monitoring period
+end_year = 2020 # end of monitoring period
+burn_in = start_year - 30 # additional burn in time
 access = 0.2029544 # 5-day probability
-start_year = 2000
-end_year = 2020
-outdoor_biting = 0.2
+outdoor = 0.2
+indoor = 1.0 - outdoor
 
 # Variable
 seeds = 10
 modes = ["perennial", "seasonal"]
 eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 65, 70, 80, 90, 100, 120, 150, 200, 250, 500, 750, 1000]
-
-# Test (12 scenarios with 2000 popsize); uncomment to overwrite other settings and do a quick test
-# pop_size = 300
-# eirs = [2, 10, 20, 40]#, 60, 80, 100, 200]
-# modes = ["perennial", "seasonal"]
-# seeds = 3
-
-# Computed
-burn_in = start_year - burn_in_years
-outdoor = outdoor_biting
-indoor = 1.0 - outdoor
 
 # Define functional form of non-perennial, seasonal setting
 season_daily = 1 + np.sin(2 * np.pi * (np.arange(0,365) / 365))
@@ -62,9 +52,9 @@ season_month = season_month / np.max(season_month)
     
 # return a list of scenarios
 def create_scenarios():
-    count = 0
+    index = 0
     scenarios = []
-    for scaffold in scaffolds.items():
+    for scaffold in scaffolds:
         xml = None
         with open(f"scaffolds/{scaffold}.xml", "r") as fp:
             xml = fp.read()
@@ -91,10 +81,10 @@ def create_scenarios():
                     for i in range(1,13):
                         scenario = scenario.replace(f'@seasonality{i}@', str(seasonality[i-1]))
                 
-                    with open(f"{experiment}/xml/{count}.xml", 'w') as fo:
+                    with open(f"{experiment}/xml/{index}.xml", 'w') as fo:
                         fo.write(f"{scenario}")
-                        scenarios.append({"scaffoldName": scaffold, "eir": eir, "seed": seed, "mode": mode, "count": count})
-                        count += 1
+                        scenarios.append({"scaffoldName": scaffold, "eir": eir, "seed": seed, "mode": mode, "index": index})
+                    index += 1
     return scenarios
 
 # run all the scenarios and write the scenarios metadata to scenarios.csv
@@ -117,7 +107,5 @@ if do_extract:
     print(f"Extracting results...", flush=True)
     shutil.rmtree(f"{experiment}/output.csv", ignore_errors = True)
     scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
-    extract.to_csv(scenarios, experiment)
-
-# load scenarios.csv and output.csv as dataframes
-# merge them (on the 'count' column) to get all the data in one place
+    df = extract.to_df(scenarios, experiment)
+    df.to_csv(f"{experiment}/output.csv", index=False, compression='gzip')

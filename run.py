@@ -8,9 +8,9 @@ def exec(command):
 def run_scicore(scenarios, experiment, om, sciCORE):
     with open(f"{experiment}/commands.txt", "w") as batch_file:
         for scenario in scenarios:
-            count = scenario["count"]
-            outputfile = f"txt/{scenario['count']}.txt"
-            command = f"openMalaria -s xml/{count}.xml --output {outputfile}"
+            index = scenario["index"]
+            outputfile = f"txt/{scenario['index']}.txt"
+            command = f"openMalaria -s xml/{index}.xml --output {outputfile}"
             batch_file.write(f"export PATH=$PATH:{om['path']} && {command}\n")
 
         n = len(scenarios)
@@ -29,9 +29,9 @@ def run_scicore(scenarios, experiment, om, sciCORE):
 def run_local(scenarios, experiment, om):
     processes = []
     for scenario in scenarios:
-        count = scenario["count"]
-        outputfile = f"txt/{scenario['count']}.txt"
-        command = f"openMalaria -s xml/{count}.xml --output {outputfile}"
+        index = scenario["index"]
+        outputfile = f"txt/{index}.txt"
+        command = f"openMalaria -s xml/{index}.xml --output {outputfile}"
         processes.append(exec(f"export PATH=$PATH:{om['path']} && cd {experiment} && {command}"))
 
     for p in processes:
