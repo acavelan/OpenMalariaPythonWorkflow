@@ -4,19 +4,14 @@
 #SBATCH --time=00:30:00
 #SBATCH --account=@account@
 #SBATCH --qos=30min
-#SBATCH --output=/dev/null #%a.err #%A_%a.err
-#SBATCH --error=/dev/null #%a.err #%A_%a.out
+#SBATCH --output=%a.err #/dev/null
+#SBATCH --error=%a.out #/dev/null
 #SBATCH --mem=1G
 #SBATCH --array=1-@N@%1000
 
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-
 export LMOD_DISABLE_SAME_NAME_AUTOSWAP=no
 
-ml iomkl/2019.01
-ml CMake/3.13.3-GCCcore-8.2.0
-ml GSL/2.5-iomkl-2019.01
-ml XSD/4.0.0-GCCcore-8.2.0
+ml OpenMalaria/44.0-iomkl-2019.01
 
 SEEDFILE="commands.txt"
 SEED=$(sed -n ${SLURM_ARRAY_TASK_ID}p $SEEDFILE)

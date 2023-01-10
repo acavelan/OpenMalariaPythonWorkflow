@@ -32,7 +32,7 @@ def run_local(scenarios, experiment, om):
         index = scenario["index"]
         outputfile = f"txt/{index}.txt"
         command = f"openMalaria -s xml/{index}.xml --output {outputfile}"
-        processes.append(exec(f"export PATH=$PATH:{om['path']} && cd {experiment} && {command}"))
+        processes.append(exec(f"cd {experiment} && {command}"))
 
     for p in processes:
         try:

@@ -94,6 +94,7 @@ if do_run:
     os.makedirs(os.path.relpath(f"{experiment}/xml"), exist_ok=True)
     os.makedirs(os.path.relpath(f"{experiment}/txt"), exist_ok=True)
     os.makedirs(os.path.relpath(f"{experiment}/fig"), exist_ok=True)
+    os.makedirs(os.path.relpath(f"{experiment}/log"), exist_ok=True)
 
     print(f"Creating scenarios...", flush=True)
     scenarios = create_scenarios()
