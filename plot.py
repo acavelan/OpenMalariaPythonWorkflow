@@ -173,7 +173,7 @@ def eir_to_prevalence2to10(df, scenarios, mode, age_groups, filename):
     plt.tight_layout()
     fig.savefig(filename)
 
-experiment = 'test'
+experiment = 'evaluate'
 
 age_groups = np.array([0.5,1,2,5,10,15,20,100]) # must reflect the xml monitoring section
 age_group_labels = [str(age_groups[i-1])+"-"+str(age_groups[i]) for i in range(1, len(age_groups))]
@@ -181,7 +181,7 @@ age_group_labels = [str(0)+"-"+str(age_groups[0])] + age_group_labels
 
 print(f"Loading...", flush=True)
 scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
-df = pd.read_csv(f"{experiment}/output.csv")
+df = pd.read_csv(f"{experiment}/output.csv", compression='gzip')
 df.reset_index(drop=True, inplace=True)
 
 # User part below

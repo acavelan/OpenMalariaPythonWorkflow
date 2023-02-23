@@ -15,21 +15,22 @@ sciCORE = {
 
 # OpenMalaria
 om = { 
-    'version' : 44,
-    'path' : "/home/acavelan/git/om-dev/fitting/om/openMalaria-44.0"
+    'version' : 45,
+    'path' : "/home/acavelan/git/fitting/om/openMalaria-45.0"
 }
-if sciCORE['use']: om['path'] = "/scicore/home/chitnis/GROUP/openMalaria-44.0/"
+if sciCORE['use']: om['path'] = "/scicore/home/scicore/cavelan/git/fitting/OpenMalaria/om/openMalaria-45.0/"
 
 # Scaffold xml to use
 scaffolds = {
-    "R0000GA"
+    "R0000GA",
+    "desc_true"
 }
 
 # switch to only run, plot or both
-do_run = False
+do_run = True
 do_extract = True
 
-experiment = 'test' # name of the experiment folder
+experiment = 'evaluate' # name of the experiment folder
 
 # Fixed parameters for all xmls
 pop_size = 10000 # number of humans
@@ -44,6 +45,11 @@ indoor = 1.0 - outdoor
 seeds = 10
 modes = ["perennial", "seasonal"]
 eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 65, 70, 80, 90, 100, 120, 150, 200, 250, 500, 750, 1000]
+
+# Test
+#seeds = 3
+#pop_size = 2000
+#eirs = [1, 5, 10, 20, 50, 100]
 
 # Define functional form of non-perennial, seasonal setting
 season_daily = 1 + np.sin(2 * np.pi * (np.arange(0,365) / 365))
