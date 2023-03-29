@@ -45,7 +45,7 @@
             <option name="expectedSevere"/>   <!-- id 77 -->
         </SurveyOptions>
         <surveys detectionLimit="40">
-      <surveyTime repeatStep="1y" repeatEnd="@end_year@-01-01">@start_year@-01-01</surveyTime>
+      <surveyTime>@start_year@-01-01</surveyTime>
       <surveyTime repeatStep="1y" repeatEnd="@end_year@-01-31">@start_year@-01-31</surveyTime>
       <surveyTime repeatStep="1y" repeatEnd="@end_year@-02-28">@start_year@-02-28</surveyTime>
       <surveyTime repeatStep="1y" repeatEnd="@end_year@-03-31">@start_year@-03-31</surveyTime>
