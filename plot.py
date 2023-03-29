@@ -89,7 +89,7 @@ def age_incidence(df, scenarios, mode, measures, title, prev_categories, age_gro
             nCases = 0
             for m in measures:
                 nCases += g[(g.measure == mmi[m]) & (age_groups[g.ageGroup-1] <= 20)].groupby(['eir', 'ageGroup', 'seed']).value.sum()
-            
+
             nCases = nCases.groupby(['eir', 'ageGroup', 'seed']).sum().reset_index()
             nHost = g[(g.measure == mmi['nHost']) & (age_groups[g.ageGroup-1] <= 20)].groupby(['eir', 'ageGroup', 'seed']).value.sum().reset_index()
             
@@ -103,6 +103,14 @@ def age_incidence(df, scenarios, mode, measures, title, prev_categories, age_gro
             nHost = nHost[(nHost.value_y >= prev_cat[0]) & (nHost.value_y <= prev_cat[1])].groupby(['eir', 'ageGroup', 'seed']).sum()
             incidence = (nCases / (nHost / 12)).groupby(['ageGroup']).value_x
             
+            # !!!!!! Only works if second measure is indirec
+            if len(measures) > 1:
+                nIndirect = g[(g.measure == mmi[measures[-1]]) & (age_groups[g.ageGroup-1] <= 20)].groupby(['eir', 'ageGroup', 'seed']).value.sum()
+                nIndirect = nIndirect.groupby(['eir', 'ageGroup', 'seed']).sum().reset_index()
+                nIndirect = nIndirect.merge(prevalence2to10, on="eir")
+                nIndirect = nIndirect[(nIndirect.value_y >= prev_cat[0]) & (nIndirect.value_y <= prev_cat[1])].groupby(['eir', 'ageGroup', 'seed']).sum()
+                incidenceIndirect = (nIndirect / (nHost / 12)).groupby(['ageGroup']).value_x
+
             if incidence.mean().empty:
                 continue
             
@@ -114,9 +122,12 @@ def age_incidence(df, scenarios, mode, measures, title, prev_categories, age_gro
             # plot mean, min and max of seeds and EIR
             ax.plot(ages, incidence.mean(), marker='o', label=f"{scaffoldName}")
             ax.fill_between(ages, incidence.min(), incidence.max(), alpha=0.3)
+            if len(measures) > 1:
+                ax.plot(ages, incidenceIndirect.mean(), marker='o', label=f"{scaffoldName}")
+                ax.fill_between(ages, incidenceIndirect.min(), incidenceIndirect.max(), alpha=0.3)
             ax.set_xticks([0.0, 5.0, 10.0, 15,0, 20.0])
             ax.set_xticklabels([0.0, 5.0, 10.0, 15,0, 20.0])
-    
+                
     for i in range(0, len(scaffoldNames)):
         coord = (i+1)/len(scaffoldNames)-1.0/len(scaffoldNames)/2
         fig.text(coord, 0.98, scaffoldNames[i], ha='center', va='center', fontsize=16)
@@ -173,7 +184,7 @@ def eir_to_prevalence2to10(df, scenarios, mode, age_groups, filename):
     plt.tight_layout()
     fig.savefig(filename)
 
-experiment = 'evaluate'
+experiment = 'evaluate_NoOnlyNewEpisode'
 
 age_groups = np.array([0.5,1,2,5,10,15,20,100]) # must reflect the xml monitoring section
 age_group_labels = [str(age_groups[i-1])+"-"+str(age_groups[i]) for i in range(1, len(age_groups))]

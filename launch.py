@@ -22,15 +22,18 @@ if sciCORE['use']: om['path'] = "/scicore/home/scicore/cavelan/git/fitting/OpenM
 
 # Scaffold xml to use
 scaffolds = {
-    "R0000GA",
-    "desc_true"
+    "R0000GA" : "R0000GA",
+    "MD40" : "A",
+    "MD40_small_p6" : "B",
+    "MD40_small_p6_BattleMD10_shorter_priors" : "C",
+    "MD40_small_p6_BattleMD10_shorter_priors_higher_weights" : "D"
 }
 
 # switch to only run, plot or both
 do_run = True
 do_extract = True
 
-experiment = 'evaluate' # name of the experiment folder
+experiment = 'evaluate_NoOnlyNewEpisode' # name of the experiment folder
 
 # Fixed parameters for all xmls
 pop_size = 10000 # number of humans
@@ -48,11 +51,11 @@ eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12
 
 # Test
 #seeds = 3
-#pop_size = 2000
+#pop_size = 10000
 #eirs = [1, 5, 10, 20, 50, 100]
 
 # Define functional form of non-perennial, seasonal setting
-season_daily = 1 + np.sin(2 * np.pi * (np.arange(0,365) / 365))
+season_daily = 1 + np.sin(2 * np.pi * (np.arange(0,365) / 365)) / 2 + np.cos(2 * np.pi * (np.arange(0,365) / 365)) / 2
 season_month = [season_daily[1+int(i*(365/12))] for i in range(0, 12)]
 season_month = season_month / np.max(season_month)
     
@@ -60,7 +63,7 @@ season_month = season_month / np.max(season_month)
 def create_scenarios():
     index = 0
     scenarios = []
-    for scaffold in scaffolds:
+    for scaffold, scaffoldName in scaffolds.items():
         xml = None
         with open(f"scaffolds/{scaffold}.xml", "r") as fp:
             xml = fp.read()
@@ -89,7 +92,7 @@ def create_scenarios():
                 
                     with open(f"{experiment}/xml/{index}.xml", 'w') as fo:
                         fo.write(f"{scenario}")
-                        scenarios.append({"scaffoldName": scaffold, "eir": eir, "seed": seed, "mode": mode, "index": index})
+                        scenarios.append({"scaffoldName": scaffoldName, "eir": eir, "seed": seed, "mode": mode, "index": index})
                     index += 1
     return scenarios
 

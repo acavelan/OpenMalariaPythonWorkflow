@@ -24,7 +24,7 @@
         </ageGroup>
     </demography>
     <monitoring name="monthly surveys" startDate="@burn_in@-01-01">
-        <SurveyOptions onlyNewEpisode="true">
+        <SurveyOptions>
             <option name="nHost"/>          <!-- id 0 -->
             <option name="nInfect"/>        <!-- id 1 -->
             <option name="nPatent"/>        <!-- id 3 -->
