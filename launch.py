@@ -32,6 +32,7 @@ scaffolds = {
 # switch to only run, plot or both
 do_run = True
 do_extract = True
+do_example =  True
 
 experiment = 'evaluate_NoOnlyNewEpisode' # name of the experiment folder
 
@@ -118,4 +119,25 @@ if do_extract:
     shutil.rmtree(f"{experiment}/output.csv", ignore_errors = True)
     scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
     df = extract.to_df(scenarios, experiment)
-    df.to_csv(f"{experiment}/output.csv", index=False, compression='gzip')
+    # df.to_csv(f"{experiment}/output.csv", index=False, compression='gzip')
+    df.to_hdf(f"{experiment}/output.h5", key='df', mode='w', index=False) # Many times faster than csv
+
+if do_example:
+    print(f"Loading...", flush=True)
+    scenarios = pd.read_csv(f'{experiment}/scenarios.csv')
+    # df = pd.read_csv(f"{experiment}/output.csv", compression='gzip')
+    df = pd.read_hdf(f"{experiment}/output.h5", key='df')
+    df.reset_index(drop=True, inplace=True)
+
+    # User part below
+    print(f"Post processing...", flush=True)
+    df.dropna(inplace=True)
+
+    # remove first survey
+    df.drop(df[df.survey == 1].index, inplace=True)
+
+    # reset index
+    df.reset_index(inplace=True)
+
+    # Sum the surveys
+    df = df.groupby(['index', 'measure', 'ageGroup'], as_index=False).value.sum()
