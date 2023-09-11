@@ -22,11 +22,7 @@ if sciCORE['use']: om['path'] = "/scicore/home/scicore/cavelan/git/fitting/OpenM
 
 # Scaffold xml to use
 scaffolds = {
-    "R0000GA" : "R0000GA",
-    "MD40" : "A",
-    "MD40_small_p6" : "B",
-    "MD40_small_p6_BattleMD10_shorter_priors" : "C",
-    "MD40_small_p6_BattleMD10_shorter_priors_higher_weights" : "D"
+    "R0000GA" : "R0000GA"
 }
 
 # switch to only run, plot or both
@@ -34,7 +30,7 @@ do_run = True
 do_extract = True
 do_example =  True
 
-experiment = 'evaluate_NoOnlyNewEpisode' # name of the experiment folder
+experiment = 'benchmark' # name of the experiment folder
 
 # Fixed parameters for all xmls
 pop_size = 10000 # number of humans
@@ -50,10 +46,10 @@ seeds = 10
 modes = ["perennial", "seasonal"]
 eirs = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 25, 30, 35, 40, 45, 50, 65, 70, 80, 90, 100, 120, 150, 200, 250, 500, 750, 1000]
 
-# Test
-#seeds = 3
-#pop_size = 10000
-#eirs = [1, 5, 10, 20, 50, 100]
+# For a quick test
+# seeds = 3
+# pop_size = 2000
+# eirs = [1, 5, 10, 20, 50, 100]
 
 # Define functional form of non-perennial, seasonal setting
 season_daily = 1 + np.sin(2 * np.pi * (np.arange(0,365) / 365)) / 2 + np.cos(2 * np.pi * (np.arange(0,365) / 365)) / 2
@@ -108,10 +104,10 @@ if do_run:
 
     print(f"Creating scenarios...", flush=True)
     scenarios = create_scenarios()
+    pd.DataFrame(scenarios).to_csv(f'{experiment}/scenarios.csv', index=False)
 
     print(f"Running {len(scenarios)} scenarios...", flush=True)
     run.run_scenarios(scenarios, experiment, om, sciCORE)
-    pd.DataFrame(scenarios).to_csv(f'{experiment}/scenarios.csv', index=False)
 
 # concatenate all txt outputs from OpenMalaria to a nice output.csv file
 if do_extract:

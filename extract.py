@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import shutil
 
 def to_df(scenarios, experiment):
