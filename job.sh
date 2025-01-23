@@ -3,16 +3,27 @@
 #SBATCH --job-name=@jobname@
 #SBATCH --time=00:30:00
 #SBATCH --account=@account@
-#SBATCH --qos=30min
-#SBATCH --output=log/%a.err #/dev/null
-#SBATCH --error=log/%a.out #/dev/null
+#SBATCH --qos=@qos@
+#SBATCH --output=log/%A_%a.out  # Job array output
+#SBATCH --error=log/%A_%a.err   # Job array error
 #SBATCH --mem=1G
-#SBATCH --array=1-@N@%1000
+#SBATCH --cpus-per-task=@CPUS_PER_TASK@  # Number of CPUs per job
+#SBATCH --array=1-@N@            # Adjust @M@ to the number of job bundles
 
-export LMOD_DISABLE_SAME_NAME_AUTOSWAP=no
+export LMOD_DISABLE_SAME_NAME_AUTOSWAP="no"
 
-ml OpenMalaria/45.0-iomkl-2019.01
+# Load GNU parallel
+ml parallel
 
+# Prepare environment
+@prepare@
+
+# Define the seed file
 SEEDFILE="commands.txt"
-SEED=$(sed -n ${SLURM_ARRAY_TASK_ID}p $SEEDFILE)
-eval $SEED
+
+# Calculate the start and end line numbers for this job array task
+START=$(( (SLURM_ARRAY_TASK_ID - 1) * @BATCH_SIZE@ + 1 ))
+END=$(( SLURM_ARRAY_TASK_ID * @BATCH_SIZE@ ))
+
+# Pipe the relevant lines to GNU parallel
+sed -n "${START},${END}p" "$SEEDFILE" | parallel -j"@CPUS_PER_TASK@"
