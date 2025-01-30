@@ -1,6 +1,8 @@
 import math, os, sys, subprocess, shutil
+import platform
 import pandas as pd
 import numpy as np
+import concurrent.futures
 
 def exec(command):
     return subprocess.Popen(command, shell = True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True, text=True)
@@ -39,35 +41,40 @@ def run_slurm(scenarios, output, om, slurm):
     
     subprocess.run(f"cd {output} && sbatch --wait start_array_job.sh", shell=True)
 
-def run_local(scenarios, output, om):
+def run_command(command, cwd):
+    process = subprocess.Popen(
+        command,
+        shell=True,              # Enable shell execution
+        cwd=cwd,                 # Change working directory
+        stdout=subprocess.PIPE,  # Capture stdout
+        stderr=subprocess.PIPE,   # Capture stderr
+        executable="/bin/bash" if platform.system() == "Linux" else None  # Use Bash only on Linux
+    )
+    stdout, stderr = process.communicate()  # Wait for process to complete
+    return stdout, stderr, process.returncode
+            
+def run_local(scenarios, output, om, max_workers=os.cpu_count()):
+    print(f'Using {max_workers} workers.')
     prepare(output, om)
     
-    processes = []
+    commands = []
     for _, scenario in scenarios.iterrows():
         index = scenario["index"]
         outputfile = f"txt/{index}.txt"
-        command = f"{om['prepare']} && openMalaria -s xml/{index}.xml --output {outputfile}"
+        commands.append(f"{om['prepare']} {om['path']}/openMalaria -s xml/{index}.xml --output {outputfile}")
 
-        # Construct environment
-        env = os.environ.copy()
-        env["PATH"] += f":{om['path']}"
-        
-        # Change to the output directory and execute the command
-        process = subprocess.Popen(
-            command,
-            shell=True,              # Enable shell execution
-            cwd=output,              # Change working directory
-            env=env,                 # Pass the modified environment
-            executable="/bin/bash",  # Use Bash 
-            stdout=subprocess.PIPE,  # Capture stdout
-            stderr=subprocess.PIPE   # Capture stderr
-        )
-        processes.append(process)
-    
-    # Wait for all processes to complete
-    for process in processes:
-        stdout, stderr = process.communicate()
-        # if process.returncode != 0:
-        #     print(f"Error: {stderr.decode().strip()}")
-        # else:
-        #     print(f"Success: {stdout.decode().strip()}")
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit tasks with limited parallelism
+        futures = [executor.submit(run_command, command, output) for command in commands]
+
+    first = True
+    for future in concurrent.futures.as_completed(futures):
+        stdout, stderr, returncode = future.result()
+        if first:
+            print(f"Command completed with return code {returncode}", flush=True)
+            if stdout:
+                print(stdout.decode(), flush=True)
+            if stderr:
+                print(stderr.decode(), flush=True)
+            print("Note: only showing output for the first process")
+            first = False
