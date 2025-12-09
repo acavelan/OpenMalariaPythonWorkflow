@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #SBATCH --job-name=@jobname@
-#SBATCH --time=00:30:00
+#SBATCH --time=06:00:00
 #SBATCH --account=@account@
 #SBATCH --qos=@qos@
 #SBATCH --output=log/%A_%a.out  # Job array output
 #SBATCH --error=log/%A_%a.err   # Job array error
-#SBATCH --mem=1G
+#SBATCH --mem-per-cpu=1G
 #SBATCH --cpus-per-task=@CPUS_PER_TASK@  # Number of CPUs per job
 #SBATCH --array=1-@N@            # Adjust @M@ to the number of job bundles
 
